@@ -1,10 +1,13 @@
 gg
-this query inserts aggregated and joined data into the tbl_WeeklyData table. It sums up the units and sets a static plan value, focusing on inbound operations under the 'FBD PTL Bypass' department. It joins data from the FBD repack table with date and building reference tables, filtering for records before the current week and grouping them to ensure accurate and comprehensive weekly reporting.
-by passcases
-this query aggregates and inserts weekly data related to the FBD PTL Bypass area, calculating actual cases and setting a static plan value. It joins data from tbl_FBD_Repack with date and building reference tables, ensuring the data is up-to-date and appropriately grouped for accurate weekly reporting.
-ppcases
-this query inserts selected data from the qry_PalletPullCases_Wk query, joined with the tbl_DCBuildings_xwalk table, into the tbl_WeeklyData table. It enriches the weekly data with information about pallet pull cases and associates each building with its parent location.
-ppunits
-this query inserts selected and transformed data from tbl_WeeklyData, enhanced with UPC information from qry_Reserve_UPC, back into the tbl_WeeklyData table. It focuses on records related to the 'Pallet Pull' department and 'Cases' unit of measure, updating the unit of measure to 'Units' and incorporating the UPC value into the Actual field.
-cpp units
-the query inserts filtered and transformed data from a join of tbl_WeeklyData and qry_Reserve_UPC into the tbl_WeeklyData table. It specifically targets rows related to the 'Cherry Pick' department and 'Cases' unit of measure, converting and including additional fields as needed.
+shuttle csess
+This SQL statement inserts aggregated data into the table tbl_WeeklyData. It calculates the average of actual values for 'Pallet Pull' and 'Putaway' departments, groups the data by various columns, and filters the results by the 'Cases' unit of measurement.
+shuttle pallets
+This SQL statement inserts aggregated data into the tbl_WeeklyData table. It calculates the average of actual values for the 'Pallet Pull' and 'Putaway' departments, groups the data by various columns, and filters the results by the 'Pallets' unit of measurement.
+shuttle units
+This SQL statement inserts aggregated data into the tbl_WeeklyData table. It calculates the average of actual values for the 'Pallet Pull' and 'Putaway' departments, groups the data by various columns, and filters the results by the 'Units' unit of measurement.
+volbldg
+This SQL statement inserts aggregated data into the tbl_UPH_Volume table. It sums the actual values from the tbl_WeeklyData table based on certain conditions and joins it with the tbl_UPHMeasures table. The result is grouped by various columns and includes a case statement to determine the 'area' column based on the 'vantageref' value.
+pallet pullcases view
+This SQL statement creates or replaces a view named "QRY PALLETPULLCASES WK" in the "SCANALYTICS" schema. It calculates various metrics related to pallet pulling cases. The view selects data from the tbl_WeeklyData table, filters by the unit of measurement being 'Cases', and groups the results by year, month, week ending, warehouse, building, and other relevant columns. It calculates the sum of actual values based on different conditions and aliases some columns for clarity.
+reserveupc view
+This SQL statement creates or replaces a view named "QRY_RESERVE_UPC" in the "SCANALYTICS" schema. The view calculates metrics related to reserve items based on units and cases. It selects data from the tbl_WeeklyData table, filters by units being either 'Units' or 'Cases', groups the results by various columns, and calculates the sum of units and cases. Additionally, it calculates the UPC (Units per Case) ratio based on the sum of units and cases. The results are filtered to include only items in the 'Reserve' area and the 'Pulling' department.
