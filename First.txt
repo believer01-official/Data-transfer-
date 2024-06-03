@@ -1,13 +1,1 @@
-gg
-shuttle csess
-This SQL statement inserts aggregated data into the table tbl_WeeklyData. It calculates the average of actual values for 'Pallet Pull' and 'Putaway' departments, groups the data by various columns, and filters the results by the 'Cases' unit of measurement.
-shuttle pallets
-This SQL statement inserts aggregated data into the tbl_WeeklyData table. It calculates the average of actual values for the 'Pallet Pull' and 'Putaway' departments, groups the data by various columns, and filters the results by the 'Pallets' unit of measurement.
-shuttle units
-This SQL statement inserts aggregated data into the tbl_WeeklyData table. It calculates the average of actual values for the 'Pallet Pull' and 'Putaway' departments, groups the data by various columns, and filters the results by the 'Units' unit of measurement.
-volbldg
-This SQL statement inserts aggregated data into the tbl_UPH_Volume table. It sums the actual values from the tbl_WeeklyData table based on certain conditions and joins it with the tbl_UPHMeasures table. The result is grouped by various columns and includes a case statement to determine the 'area' column based on the 'vantageref' value.
-pallet pullcases view
-This SQL statement creates or replaces a view named "QRY PALLETPULLCASES WK" in the "SCANALYTICS" schema. It calculates various metrics related to pallet pulling cases. The view selects data from the tbl_WeeklyData table, filters by the unit of measurement being 'Cases', and groups the results by year, month, week ending, warehouse, building, and other relevant columns. It calculates the sum of actual values based on different conditions and aliases some columns for clarity.
-reserveupc view
-This SQL statement creates or replaces a view named "QRY_RESERVE_UPC" in the "SCANALYTICS" schema. The view calculates metrics related to reserve items based on units and cases. It selects data from the tbl_WeeklyData table, filters by units being either 'Units' or 'Cases', groups the results by various columns, and calculates the sum of units and cases. Additionally, it calculates the UPC (Units per Case) ratio based on the sum of units and cases. The results are filtered to include only items in the 'Reserve' area and the 'Pulling' department.
+This SQL query inserts data into a table named `tbl_WeeklyData`. It selects values from another table `tbl_WeeklyData` and a query named `qry_Reserve_UPC`, joining them on specific conditions. The inserted data includes various fields such as Year, Month, Fiscal Month, etc., with 'Units' as the unit of measure (UOM). The query filters the data based on certain criteria, including the department being 'Cherry Pick' and the unit of measure being 'Cases'.￼Enter
