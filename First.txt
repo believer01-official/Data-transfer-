@@ -1,2 +1,10 @@
 gg
 this query inserts aggregated and joined data into the tbl_WeeklyData table. It sums up the units and sets a static plan value, focusing on inbound operations under the 'FBD PTL Bypass' department. It joins data from the FBD repack table with date and building reference tables, filtering for records before the current week and grouping them to ensure accurate and comprehensive weekly reporting.
+by passcases
+this query aggregates and inserts weekly data related to the FBD PTL Bypass area, calculating actual cases and setting a static plan value. It joins data from tbl_FBD_Repack with date and building reference tables, ensuring the data is up-to-date and appropriately grouped for accurate weekly reporting.
+ppcases
+this query inserts selected data from the qry_PalletPullCases_Wk query, joined with the tbl_DCBuildings_xwalk table, into the tbl_WeeklyData table. It enriches the weekly data with information about pallet pull cases and associates each building with its parent location.
+ppunits
+this query inserts selected and transformed data from tbl_WeeklyData, enhanced with UPC information from qry_Reserve_UPC, back into the tbl_WeeklyData table. It focuses on records related to the 'Pallet Pull' department and 'Cases' unit of measure, updating the unit of measure to 'Units' and incorporating the UPC value into the Actual field.
+cpp units
+the query inserts filtered and transformed data from a join of tbl_WeeklyData and qry_Reserve_UPC into the tbl_WeeklyData table. It specifically targets rows related to the 'Cherry Pick' department and 'Cases' unit of measure, converting and including additional fields as needed.
