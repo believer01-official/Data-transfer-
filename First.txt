@@ -1,11 +1,1 @@
-The SQL query inserts data into the tbl_WeeklyData table by selecting and transforming records from the same table, joined with the qry_Reserve_UPC table. Specifically, it targets rows where the department (DEPT) is 'Cherry Pick' and the unit of measure (UOM) is 'Cases'. The query matches records between tbl_WeeklyData and qry_Reserve_UPC based on building (BLDG), warehouse (WHSE), week ending (WEEK_ENDING), and year (Year). It selects various fields from the tbl_WeeklyData table, such as Year, Month, Fiscal Month, FYWeekNo, WEEK_ENDING, WHSE, BLDG, Parent, AREA, and DEPT, and also sets the UOM to 'Units' for all inserted records. Additionally, the Actual field is populated with the upc value from the qry_Reserve_UPC table. This operation effectively copies and updates specific rows from the existing weekly data, enriching them with information from the UPC reserve data.
-
-
-
-
-
-
-
-Message ChatGPT
-
-ChatGPT can make mist
+The SQL query inserts data into the `tbl_WeeklyData` table by selecting specific records from `tbl_WeeklyData` and joining them with the `qry_Reserve_UPC` table. It targets records where the department (`DEPT`) is 'Pallet Pull' and the unit of measure (`UOM`) is 'Cases'. The query matches records between `tbl_WeeklyData` and `qry_Reserve_UPC` based on the building (`BLDG`), warehouse (`WHSE`), week ending date (`WEEK_ENDING`), and year (`Year`). It selects fields such as `Year`, `Month`, `FiscalMonth`, `FYWeekNo`, `WEEK_ENDING`, `WHSE`, `BLDG`, `Parent`, `AREA`, and `DEPT` from `tbl_WeeklyData`, and sets the unit of measure (`UOM`) to 'Units'. Additionally, it populates the `Actual` column with the `upc` value from `qry_Reserve_UPC`. This operation updates the weekly data by incorporating UPC information for the specified department and unit of measure.
