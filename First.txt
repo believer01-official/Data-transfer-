@@ -1,1 +1,40 @@
 gg
+INSERT INTO tbl_WeeklyData (Year, Month, WEEK_ENDING, WHSE, BLDG, Parent, AREA, DEPT, UOM, Actual, Plan, FiscalMonth, FYWeekNo)
+SELECT 
+    Year,
+    Month,
+    WEEK_ENDING,
+    WHSE,
+    BLDG,
+    Parent,
+    AREA,
+    'DECASING' AS DEPT,
+    CASE 
+        WHEN UOM = 'Puts' THEN 'Packs' 
+        ELSE UOM 
+    END AS UOM,
+    SUM(Actual) AS SumOfActual,
+    SUM(Plan) AS SumOfPlan,
+    FiscalMonth,
+    FYWeekNo
+FROM 
+    tbl_WeeklyData
+WHERE 
+    BLDG = 'CAC' 
+    AND DEPT = 'FLAT PTL'
+    AND UOM IN ('Cases', 'Units', 'Puts')
+GROUP BY 
+    Year, 
+    Month, 
+    WEEK_ENDING, 
+    WHSE, 
+    BLDG, 
+    Parent, 
+    AREA, 
+    'DECASING', 
+    CASE 
+        WHEN UOM = 'Puts' THEN 'Packs' 
+        ELSE UOM 
+    END,
+    FiscalMonth, 
+    FYWeekNo;
