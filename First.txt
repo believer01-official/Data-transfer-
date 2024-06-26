@@ -1,40 +1,102 @@
-gg
-INSERT INTO tbl_WeeklyData (Year, Month, WEEK_ENDING, WHSE, BLDG, Parent, AREA, DEPT, UOM, Actual, Plan, FiscalMonth, FYWeekNo)
-SELECT 
-    Year,
-    Month,
-    WEEK_ENDING,
-    WHSE,
-    BLDG,
-    Parent,
-    AREA,
-    'DECASING' AS DEPT,
-    CASE 
-        WHEN UOM = 'Puts' THEN 'Packs' 
-        ELSE UOM 
-    END AS UOM,
-    SUM(Actual) AS SumOfActual,
-    SUM(Plan) AS SumOfPlan,
-    FiscalMonth,
-    FYWeekNo
-FROM 
-    tbl_WeeklyData
-WHERE 
-    BLDG = 'CAC' 
-    AND DEPT = 'FLAT PTL'
-    AND UOM IN ('Cases', 'Units', 'Puts')
-GROUP BY 
-    Year, 
-    Month, 
-    WEEK_ENDING, 
-    WHSE, 
-    BLDG, 
-    Parent, 
-    AREA, 
-    'DECASING', 
-    CASE 
-        WHEN UOM = 'Puts' THEN 'Packs' 
-        ELSE UOM 
-    END,
-    FiscalMonth, 
-    FYWeekNo;
+Sure, here’s a sample description you can use for your VBScript program that converts an Access database into a CSV file:
+
+---
+
+**Program Description:**
+
+**Title:** Access Database to CSV Converter
+
+**Overview:**
+The Access Database to CSV Converter is a VBScript program designed to streamline the process of extracting data from Microsoft Access databases and converting it into CSV (Comma-Separated Values) files. This conversion facilitates easier data manipulation, sharing, and analysis across different platforms and applications.
+
+**Purpose:**
+The primary objective of this program is to automate the extraction of data from Access databases, reducing manual effort and minimizing the risk of errors during the data transfer process. By converting the data into CSV format, users can leverage the flexibility and compatibility of CSV files with various data processing tools and environments.
+
+**Features:**
+1. **Automated Data Extraction:** The script automatically connects to the specified Access database, executes predefined queries, and retrieves the data.
+2. **CSV File Generation:** Extracted data is systematically converted and written into CSV files, preserving the structure and integrity of the original data.
+3. **Error Handling:** The program includes error handling mechanisms to manage issues such as database connection failures, query errors, and file write permissions.
+4. **User Configuration:** Users can easily configure the script to specify the source database, target CSV file location, and the queries to be executed.
+
+**Usage Instructions:**
+1. **Setup:** Ensure that the system has the necessary permissions to access the Access database and write to the desired output directory.
+2. **Configuration:** Modify the VBScript to include the path to the Access database, the SQL queries to be executed, and the path for the output CSV file.
+3. **Execution:** Run the VBScript. The script will connect to the Access database, execute the specified queries, and generate the CSV file(s) in the designated location.
+4. **Verification:** Verify the contents of the generated CSV file(s) to ensure the accuracy and completeness of the extracted data.
+
+**Technical Details:**
+- **Language:** VBScript
+- **Dependencies:** Microsoft Access Database Engine
+- **Input:** Microsoft Access Database (.accdb or .mdb)
+- **Output:** CSV file (.csv)
+
+**Example Code Snippet:**
+```vbscript
+' VBScript to convert Access Database to CSV
+
+Const adOpenStatic = 3
+Const adLockOptimistic = 3
+Const adCmdText = &H0001
+
+Dim conn, rs, sqlQuery, outputFile
+Set conn = CreateObject("ADODB.Connection")
+Set rs = CreateObject("ADODB.Recordset")
+
+' Path to Access Database
+conn.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\Path\To\Database.accdb;"
+
+' SQL Query to fetch data
+sqlQuery = "SELECT * FROM TableName"
+
+' Open Recordset
+rs.Open sqlQuery, conn, adOpenStatic, adLockOptimistic, adCmdText
+
+' Path to Output CSV File
+outputFile = "C:\Path\To\Output.csv"
+
+' Create and Write to CSV File
+Dim fso, file
+Set fso = CreateObject("Scripting.FileSystemObject")
+Set file = fso.CreateTextFile(outputFile, True)
+
+' Write Column Headers
+Dim i
+For i = 0 To rs.Fields.Count - 1
+    file.Write rs.Fields(i).Name
+    If i < rs.Fields.Count - 1 Then
+        file.Write ","
+    End If
+Next
+file.WriteLine()
+
+' Write Data Rows
+Do Until rs.EOF
+    For i = 0 To rs.Fields.Count - 1
+        file.Write rs.Fields(i).Value
+        If i < rs.Fields.Count - 1 Then
+            file.Write ","
+        End If
+    Next
+    file.WriteLine()
+    rs.MoveNext
+Loop
+
+' Clean Up
+rs.Close
+conn.Close
+file.Close
+
+Set rs = Nothing
+Set conn = Nothing
+Set file = Nothing
+Set fso = Nothing
+
+WScript.Echo "Data export to CSV completed successfully!"
+```
+
+**Conclusion:**
+The Access Database to CSV Converter provides a reliable and efficient solution for extracting and converting data from Access databases to CSV format. This program is ideal for users who need to frequently export data for reporting, analysis, or integration with other systems.
+
+---
+
+Feel free to customize this description to better fit your specific implementation and requirements.
