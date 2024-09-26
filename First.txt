@@ -1,1 +1,25 @@
-new
+import pandas as pd
+import os
+
+def convert_excel_to_csv(excel_file, output_dir):
+    # Load the Excel file
+    df = pd.read_excel(excel_file, sheet_name=None)  # Load all sheets
+
+    # Loop through each sheet and save as CSV
+    for sheet_name, data in df.items():
+        # Create a CSV filename
+        csv_file = os.path.join(output_dir, f"{sheet_name}.csv")
+        # Save the DataFrame to CSV
+        data.to_csv(csv_file, index=False)
+        print(f"Converted {sheet_name} to {csv_file}")
+
+if __name__ == "__main__":
+    # Specify the Excel file and output directory
+    excel_file = 'path/to/your/excel_file.xlsx'  # Update this path
+    output_dir = 'path/to/output/directory'      # Update this path
+
+    # Make sure the output directory exists
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Convert the Excel file to CSV
+    convert_excel_to_csv(excel_file, output_dir)
