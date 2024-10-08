@@ -1,4 +1,6 @@
 
+
+
 import pyodbc
 import pandas as pd
 import warnings
@@ -11,10 +13,8 @@ warnings.filterwarnings("ignore", category=UserWarning)
 with open('config.json', 'r') as file:
     config = json.load(file)
 
-# Get settings from the JSON file
+# Get database settings from the JSON file
 db_file = config['database']['db_file']
-table_name = config['table']['table_name']
-csv_file_path = config['output']['csv_file_path']
 
 # Set up the connection to the Access database
 conn_str = (
@@ -25,16 +25,21 @@ conn_str = (
 # Connect to the Access database
 conn = pyodbc.connect(conn_str)
 
-# Query the table
-query = f"SELECT * FROM {table_name}"
+# Iterate through each table in the configuration
+for table in config['tables']:
+    table_name = table['table_name']
+    csv_file_path = table['csv_file_path']
 
-# Read the query results into a pandas DataFrame
-df = pd.read_sql(query, conn)
+    # Query the table
+    query = f"SELECT * FROM {table_name}"
 
-# Save the DataFrame as a CSV file
-df.to_csv(csv_file_path, index=False)
+    # Read the query results into a pandas DataFrame
+    df = pd.read_sql(query, conn)
+
+    # Save the DataFrame as a CSV file
+    df.to_csv(csv_file_path, index=False)
+
+    print(f"Table {table_name} has been successfully exported to {csv_file_path}")
 
 # Close the connection
 conn.close()
-
-print(f"Table {table_name} has been successfully exported to {csv_file_path}")
