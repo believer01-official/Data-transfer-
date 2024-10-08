@@ -1,5 +1,29 @@
-@echo off
-xcopy "C:\path\to\source\folder" "C:\path\to\destination\folder" /E /I /Y
-echo Folder copied successfully.
-pause
-￼Enter
+import pyodbc
+import pandas as pd
+
+# Set up the connection to the Access database
+db_file = r"path_to_your_access_file.accdb"  # Change to your .accdb file path
+conn_str = (
+    r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
+    r'DBQ=' + db_file + ';'
+)
+conn = pyodbc.connect(conn_str)
+
+# Specify the table you want to extract
+table_name = 'your_table_name'  # Replace with your table name
+
+# Query the table
+query = f"SELECT * FROM {table_name}"
+
+# Use pandas to execute the query and read the data into a DataFrame
+df = pd.read_sql(query, conn)
+
+# Save the DataFrame as a CSV file
+csv_file_path = r'output_file.csv'  # Specify the output file path
+df.to_csv(csv_file_path, index=False)
+
+# Close the connection
+conn.close()
+
+print(f"Table {table_name} has been successfully exported to {csv_file_path}")
+
