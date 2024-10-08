@@ -1,25 +1,12 @@
-import pandas as pd
-from sqlalchemy import create_engine
 
-# Set up the connection string to Access database
-db_file = r"path_to_your_access_file.accdb"  # Change to your .accdb file path
-conn_str = f"access+pyodbc:///?odbc_connect=DRIVER={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={db_file};"
-
-# Create an SQLAlchemy engine
-engine = create_engine(conn_str)
-
-# Specify the table you want to extract
-table_name = 'your_table_name'  # Replace with your table name
-
-# Read the table into a pandas DataFrame
-df = pd.read_sql_table(table_name, engine)
-
-# Save the DataFrame as a CSV file
-csv_file_path = r'output_file.csv'  # Specify the output file path
-df.to_csv(csv_file_path, index=False)
-
-# Close the connection
-engine.dispose()
-print(f"Table {table_name} has been successfully exported to {csv_file_path}")
-￼Enter
-hi hi
+{
+  "database": {
+    "db_file": "C:/path/to/your/access_file.accdb"
+  },
+  "table": {
+    "table_name": "your_table_name"
+  },
+  "output": {
+    "csv_file_path": "C:/path/to/output_file.csv"
+  }
+}
