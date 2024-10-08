@@ -20,7 +20,6 @@ df.to_csv(csv_file_path, index=False)
 
 # Close the connection
 engine.dispose()
-
 print(f"Table {table_name} has been successfully exported to {csv_file_path}")
 ￼Enter
 hi hi
