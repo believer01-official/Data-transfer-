@@ -1,210 +1,128 @@
-DATASERVE
+Here’s a structured Word document draft summarizing the content in 700 words:  
 
-Introduction: -
-Dataserve is a cloud-based tool for managing and analyzing data. It exposes data as an API i.e., it works as an interface between user and server. It has 3 key elements.
+---
 
+# Dataserve, Digital Drive Thru (DDT), and Getrecs Documentation  
 
+## **Dataserve**  
 
+### **Introduction**  
+Dataserve is a cloud-based tool for managing and analyzing data, functioning as an interface between users and servers. Its three core elements are **Onboarding**, **Loading**, and **Serving**, with the latter being the most widely used.  
 
-	
+Dataserve serves two applications:  
+1. **Play_id**: Provides single predictions based on location number and operating date.  
+2. **PlayBuilder_id**: Provides multiple predictions by combining store number, starting time, and ending time.  
 
+**Tokens** such as the Bearer token authorize Dataserve URLs. A sample Dataserve URL:  
+`https://aireserve-prod.azure-api.net/serve/dat/playbuilder/prod/play`  
 
-Fig. 1: Elements of Dataserve
+Dataserve's production must be monitored every 4 hours.  
 
-Onboarding and loading have minimum usage only whereas serving has maximum usage. Play_id and Playbuilder_id are two applications served by dataserve for querying data. 
-Play_id
-If the user hit the URL with play_id, then the output will be single prediction. It is a combination of location no. and that particular operating date.
-PlayBuilder_id
-If the user hit the URL with playbuilder_id then the output will be multiple prediction. It is a combination of store no., store starting time and store ending time. Playbuilder_id is basically a collection of data from an organization.
-Tokens
-We have some tokens for identifying, authorization, authentication, etc., of an URL. Bearer token is one among those tokens which is used to authorization of an URL.
-Sample URL for Identifying Dataserve
-https://aireserve-prod.azure-api.net/serve/dat/playbuilder/prod/play
-Dataserve production monitoring should be happen for every 4 hours once.
+---
 
-Onboarding API: -
-It creates an outline for loading data into the server for processing. It’s a onetime activity. Manifest file is used to check the correctness of data that must be onboard. Manifest file uses JSON document. In that document the data can be of two types one is delta and another one is parquet. The manifest file can be identified based on type (data or model), app name (play builder) and dataset name (play or guidance).
+### **Key APIs**  
 
-Error scenarios
- 
-Fig. 2: Response Codes for Onboarding API
+#### **1. Onboarding API**  
+- Defines the outline for loading data into the server.  
+- Involves a manifest file in JSON format, with delta or parquet data types.  
+- Identified by type (data/model), app name, and dataset name.  
 
+**Response Codes**:  
+- 200: Success  
+- 400: Bad Request  
+- 401: Unauthorized  
 
+#### **2. Loading API**  
+- Data is loaded by the ROA and AI Reserve teams into Cosmos DB.  
+- Data bricks jobs are triggered.  
 
+**Response Codes**:  
+- 200: Success  
+- 400: Invalid Request  
+- 500: Internal Server Error  
 
+#### **3. Serving API**  
+- User-facing and fetches requested data from Cosmos DB.  
+- Requires URL, Bearer token, filters, subscription key, and correlation ID.  
 
+---
 
+### **Dataserve Architecture**  
+Data is onboarded via APIs, invoked by scoring pipelines, and served to users through query parameters (play_id and playbuilder_id).  
 
+---
 
+### **Monitoring**  
+**Datadog Dashboard Metrics**:  
+- **Response Codes**: Charts for 200, 400, and 500 codes.  
+- **Performance Metrics**: Response time, single/multiple predictions, and regional response time.  
+- **Kubernetes Monitoring**: CPU, memory, and pod details.  
 
+---
 
+## **Digital Drive Thru (DDT)**  
 
-Loading (or) Data changer API:  -
-In loading API, the data can be loaded by ROA and AI Reserve team. The loaded data are stored in cosmos DB. Data bricks job created earlier will be triggered. 
+### **Introduction**  
+DDT recommends products at drive-thru locations based on store, location, weather, time, and historical purchase data. It utilizes **AI/ML reinforcement learning** to make real-time predictions.  
 
-Error scenarios
- 
+**Key Features**:  
+- **Zero Cart**: No items in the cart.  
+- **Plus Cart**: Recommendations updated upon product addition.  
 
-Fig. 3: Response Codes for Loading API
+---
 
+### **DDT Workflow**  
+1. Customers send requests via a proxy and firewall to the open API.  
+2. The request is authenticated via Azure Auth and directed to the orchestrator.  
+3. The **Deep Brew Tardigrade algorithm** processes the request using:  
+   - **DQN**: Selects product categories.  
+   - **IMS**: Filters unavailable products.  
 
+**Key Monitoring Metrics** (via Datadog):  
+- Throughput distribution.  
+- Application latency (P95, P99).  
+- CPU and memory utilization.  
 
+---
 
+## **Getrecs**  
 
+### **Introduction**  
+Getrecs provides **store-based recommendations**, considering product availability and seasonal trends. Recommendations adapt to cart updates, leveraging customer purchasing history and store inventory.  
 
+---
 
+### **Architecture**  
+The frontend (AKS-EUS cluster) interfaces with the backend (Bandits) using the **Thompson Algorithm**, which ranks recommendations based on customer needs and purchase frequency.  
 
+---
 
-Serving API: -
-It is a user facing application. It serves data to user that if the user request something then it fetch those data from cosmos DB and give it to the user. It can be triggered using dataserve URL, bearer token, filters, subscription key and correlation ID. Correlation ID can be used to fetch unique request from user. Both play_id and playbuilder_id are used to query the values.
+### **Pipelines**  
+Getrecs operates via five pipelines, categorized into **data processing** and **data loading**:  
 
-Error scenarios
- 
+#### **1. Data Processing Pipelines**  
+- **Store_Details**: Fetches and updates store data weekly (10 minutes).  
+- **POS_Data**: Processes transactional data daily (22 minutes).  
+- **Db_ETL**: Creates feature data for recommendations weekly (3 hours).  
 
+#### **2. Data Loading Pipelines**  
+- **Upload_to_Redis**: Uploads db_etl output (except user-product interaction) weekly (15 minutes).  
+- **Data_Loading_and_Switching**: Loads user-product interaction data into SQL Server weekly (4 hours 50 minutes).  
 
+---
 
+### **Error Handling**  
+If pipelines fail, alerts are triggered via Slack. Failed child pipelines are re-run for specific dates.  
 
+---
 
+### **Monitoring**  
+Pipelines are monitored using **Azure Data Factory** and logs are stored in **App Insights**.  
 
+---
 
+This structured documentation includes the introduction, workflow, monitoring metrics, pipelines, and error handling processes for Dataserve, DDT, and Getrecs, providing a comprehensive overview of these systems.  
 
+---  
 
-
-End to end flow for dataserve: -
-
- 
-
-Fig. 4: Dataserve Architecture
-
-In this process, data can be onboarded by ROA & AI Reserve team with manifest and it responds back to them with assigned job name through onboarding API. After that data can be invoke by a publisher scoring pipeline with assigned job name and respond back to that pipeline with cache refresher run id through loading API. Finally, those ids are invoked with query parameters (play_id & playbuilder_id) by consumer and respond back to them with requested document results through serving API.
-
-Dataserve Dashboard: -
-DataDog dashboard is using for monitoring dataserve. Here are metrices in that dashboard,
-Response code based metrices – Cumulative chart for 200, 400 and 500 codes get displayed.
-Name based metrices – Chart for 200, 400, 210 (No documents fetched), 499, 401, 503 and 501 codes get displayed.
-Count based metrices – Chart which shows the count for codes in named based metrices get displayed.
-Split based metrices – Chart for avg. response time, count for single prediction requests, count for multiple prediction requests, 95 percentile response time, 99 percentile response time and region wise response time get displayed.
-Kubernetes – Chart for CPU usage by pod, memory usage by pod and pod running get displayed.
-
-Dataserve basic commands: -
-Windows powershell have been used for running commands. Some of those commands are,
-kubectl get pods -n data-as-api  To fetch pods running in dataserve with the details like status, restarts and age of pods in dataserve.
-kubectl top pods -n data-as-api  To fetch the details of CPU and memory usage of pods in dataserve.
-kubectl get hpa -n data-as-api  To fetch the details like targets, minpods, maxpods, replicas and pod age in dataserve.
-kubectl describe pod -n data-as-api  To fetch the description of specific pod in dataserve.
-
-RCA for Pod Restart in DataServe: -
-Here, I mentioned the template to create root cause analysis (RCA) if there is any pod restart in dataserve.
-Step 1: Issue – Mention the issue with details such as region, pod name, node name, name space.
-Step 2: Analysis – Get pods, top pods, get hpa, CPU usage, memory usage, exit code and pod event            have to be analysed.
-
-
-
-
-mDDT(DIGITAL DRIVE THRU)
-Introduction: -
-Digital drive thru is one of the main applications where model serve is being used. This is an application that recommends products for the customers at various drive thru locations based on the store, its location, the weather, time of the day etc. These recommendations are generated using AI/ML based algorithms. This is based on reinforcement learning, means that it works on the historical data of the customer purchase to achieve an expected outcome.
-Zero cart: When there is no item in the cart it’s taken as zero cart 
-Plus cart: When the customer adds products to the cart then it will become plus cart.
-When the customer adds a product to their cart, new recommendations are getting refreshed based on the added product.
-DataDog dashboard is using for monitoring DDT. Here monitor the metrices every 8 hours. This is a real time process, so low latency is a key feature. From the dashboard Throughput distribution,P95 & P99 application latency , maximum CPU utilization, maximum memory utilization and DDT front end pod details  is monitored. Worker time out is also monitored which taken from Azure Kubernetes service.
-DDT SEQUENCE DIAGRAM: -
- 
-Fig 1: DDT Sequence Diagram
-
-•	As soon as customer adds product to the cart, a post request has been sent to our endpoint. 
-•	But, the stores doesn’t have access to open internet so they have to go through proxy(blue coat), then the traffic is led to one of the “Retail network firewalls”(hosted on data centers available in Florida/Virginia) then only it will be available in open network.
-Then it will be routed to the open API. 
-•	Open API provides interface level edge protection for Starbucks against open internet attacks. The authentication for the request is done by Azure Auth. 
-•	The request from whitelist IP is transferred to the orchestrator. Then they will go to the deep brew orchestration.
-•	The orchestrator determines the right place to land the traffic whether its to the tardigrade endpoint.
-•	The Deep brew tardigrade DDT algorithm will then generate new recommendations based on this.
-•	Recommendation Request time or Reco Request is the total time between customer post request to the Starbucks and the response request.
-
-The Tardigrade algorithm has two core parts:
-DQN: Selecting the category of the product to recommend and the form code as a list of tuples.
-IMS: Filters out any resulting products is out of stock based on the category form code.
-
-
-DDT Workflow Diagram: -
- 
-•	As soon as customer adds product to the cart, a post request is created and reaches the Deep brew orchestrator.
-•	Deep brew orchestrator will detect the user request and directs the request to the traffic manager.
-•	Traffic manager will manage the traffic by splitting the traffic into two different regions East US and Central US. All the request is in the form of APIs for managing that Azure API management is there.
-•	Azure API management will route the request to front end ingress and backend ingress.
-•	In the front-end ingress, first Auth step then the request is preprocessed and switched to backend Ingress. 
-•	In Back-end ingress, based on the type of request and force variant it will select the backend model then it provides the model training and gives the model response, and it returns to the user.
-•	App Insights and new relic is used for logging.
-
-
-Doubts: I have cleared with Rissy while preparing this document.
-
-
-GETRECS
-Introduction: -
-Getrecs is a mobile based application which has a main purpose of serving store-based recommendations. Store-based recommendations in the sense getrecs gives the recommendation not only based on the history of purchase of the person but also based on what he had purchased earlier is available in store or not. And getrecs also check whether the product which are sold often in that season is recommend to a person or not. Getrecs also a cart based recommendation that is if a person put anything to a cart it will recommend some other similar products and it’s availability to the customer.
-
- 
-Fig. 1: Getrecs Architecture
-
-In above API flow diagram, AKS-EUS cluster acts as frontend and bandits acts as backend. In bandits, there is one algorithm called Thompson which used to suggest recommendations based on rankings. Ranking means it will give rank based on need of a person from their historical database. Ex., The products which have been purchased frequently by the consumer are ranked first for the recommendation then moderate purchasing products then low like that it will rank.
-Getrecs itself can be able to give rank and have the ability to stop bandits to give rank.
-Getrecs uses 5 pipelines for processing request. They are,
-	Store_details
-	POS_data
-	db_etl
-	Upload to redis
-	Load and switch
-Recommendations are fetched from store_details and POS_data pipelines. Store_details, POS_data and db_etl are data processing pipelines whereas upload to redis, load and switch are data loading pipelines.
-Store_details pipeline: -
-Basically, this pipeline is for getting store details and it does the updation job of store details. That is, this pipeline is used to fetch the store-related details from EDAP table then aggregate the necessary details and save those details in delta path.
-If this job fails, then the updation will not be reflect in store details. But the previous weeks details will be present in pipeline so the dependent pipelines will use those non upgraded details. 
-Here data can be loaded from ADF (Azure Data Factory). This pipeline has been running for 10 minutes on weekly basis that is on every Monday. 
-POS_data pipeline: -
-This job is done to get the input of db_etl’s individual notebook as the output of POS_data. 
-Fetch the latest product data from open API through REST API call and save it in delta path and by using the these product data and fetching data from EDAP table POS_product_xid can create customers-products transactional data (product data taken from the history of the customer through bills is called transactional data) for daily. This is the main purpose of this pipeline.
-Here data can be loaded from ADF (Azure Data Factory). This pipeline has been running for 22 minutes on daily basis.
-Db_etl pipeline: -
-It is the main pipeline and it has 9 notebooks. This pipeline is used to get the output of db_etl as a features that will be used by getrecs application to send recommendations. Basically it loads output of POS_data to each notebook in db_etl and create delta path.  
-Here data can be loaded from ADF (Azure Data Factory). This pipeline has been running for 3 hours on weekly (on particular date, for whole week (or) using individual pipeline name) basis usually on every tuesday.
-9 notebooks in db_etl
-1)	Product Pricing
-     To fetch the latest product data to calculate the price of products and save it in delta path.
-
-2)	Product Pairings Complaint
-    Features of food-to-beverage pairs can be created by considering last one year’s POS_data.
-
-
-3)	Context Similiarity
-     To  fetch the POS_data to calculate the similarity of different contexts (state and day part) and save it in delta path.
-
-4)	Most Frequent SKU
-      From last one year’s POS_data it calculates the most frequent product bought by the customer in every context and save it in delta path.
-
-5)	Product Pairing Non Compliment
-      Features for food-to-food and beverage-to-beverage pairs can be created by using last one year’s POS_data and save it in delta path.
-
-6)	Popular Products
-       From Pos_data it can find the popular product among customers and save it in delta path.
-
-7)	Product Details
-       From output of fetch_product_from_api it can fetch the details associated with product.
-
-8)	User Product Interaction
-       Creation of user-to-product interaction decay and no decay features.
-
-9)	Validate
-       To check the duplicates, this notebook can validate the output of all notebooks in db_etl.
-Here first 7 notebooks are act as a feature of db_etl.
-Upload_to_redis: -
-This pipeline is used to upload all output of db_etl pipeline except the output of user_product_interaction from delta path to redis cache. In delta path, the files contain the output of db_etl to be upload to redis.
-Here data can be loaded from ADF (Azure Data Factory). This pipeline has been running for 15 minutes on weekly basis that is on every wednesday.
-Data_loading and switching pipeline: -
-This pipeline is used to load user_product_interaction data into the SQL server.
-Here data can be loaded from ADF (Azure Data Factory). This pipeline has been running for 4 hours 50 minutes on weekly basis that is on every Wednesday.
-
-Recent_customer purchases:
-This pipeline is used to collect data of last customer’s purchase then give recommendations and uploaded it to EDAP table.
-Error scenario: -
-If any one of these pipelines fails, then an alert will be sent by slack then we can run the child pipeline for that particular date.
-
+Let me know if you need additional formatting or any adjustments!
