@@ -1,5 +1,103 @@
-### **Usuals in Azure Data Factory**  
-"Usuals" refer to routine or common patterns in data processing, such as extracting, transforming, and loading (ETL) data from various sources. In Azure Data Factory (ADF), these tasks include connecting to databases, applying transformations, and storing the processed data in data lakes or warehouses. They are automated using ADF pipelines to ensure efficiency and consistency.
+DATASERVE
 
-### **Similarities in Azure Data Factory**  
-"Similarities" in ADF typically relate to comparing datasets to identify patterns, matches, or duplicate records. For example, comparing sales data from different regions or detecting duplicate entries. ADF uses tools like mapping data flows or joins to process such comparisons efficiently, ensuring accurate and actionable insights.
+Introduction: -
+Dataserve is a cloud-based tool for managing and analyzing data. It exposes data as an API i.e., it works as an interface between user and server. It has 3 key elements.
+
+
+
+
+	
+
+
+Fig. 1: Elements of Dataserve
+
+Onboarding and loading have minimum usage only whereas serving has maximum usage. Play_id and Playbuilder_id are two applications served by dataserve for querying data. 
+Play_id
+If the user hit the URL with play_id, then the output will be single prediction. It is a combination of location no. and that particular operating date.
+PlayBuilder_id
+If the user hit the URL with playbuilder_id then the output will be multiple prediction. It is a combination of store no., store starting time and store ending time. Playbuilder_id is basically a collection of data from an organization.
+Tokens
+We have some tokens for identifying, authorization, authentication, etc., of an URL. Bearer token is one among those tokens which is used to authorization of an URL.
+Sample URL for Identifying Dataserve
+https://aireserve-prod.azure-api.net/serve/dat/playbuilder/prod/play
+Dataserve production monitoring should be happen for every 4 hours once.
+
+Onboarding API: -
+It creates an outline for loading data into the server for processing. It’s a onetime activity. Manifest file is used to check the correctness of data that must be onboard. Manifest file uses JSON document. In that document the data can be of two types one is delta and another one is parquet. The manifest file can be identified based on type (data or model), app name (play builder) and dataset name (play or guidance).
+
+Error scenarios
+ 
+Fig. 2: Response Codes for Onboarding API
+
+
+
+
+
+
+
+
+
+
+
+Loading (or) Data changer API:  -
+In loading API, the data can be loaded by ROA and AI Reserve team. The loaded data are stored in cosmos DB. Data bricks job created earlier will be triggered. 
+
+Error scenarios
+ 
+
+Fig. 3: Response Codes for Loading API
+
+
+
+
+
+
+
+
+
+Serving API: -
+It is a user facing application. It serves data to user that if the user request something then it fetch those data from cosmos DB and give it to the user. It can be triggered using dataserve URL, bearer token, filters, subscription key and correlation ID. Correlation ID can be used to fetch unique request from user. Both play_id and playbuilder_id are used to query the values.
+
+Error scenarios
+ 
+
+
+
+
+
+
+
+
+
+
+End to end flow for dataserve: -
+
+ 
+
+Fig. 4: Dataserve Architecture
+
+In this process, data can be onboarded by ROA & AI Reserve team with manifest and it responds back to them with assigned job name through onboarding API. After that data can be invoke by a publisher scoring pipeline with assigned job name and respond back to that pipeline with cache refresher run id through loading API. Finally, those ids are invoked with query parameters (play_id & playbuilder_id) by consumer and respond back to them with requested document results through serving API.
+
+Dataserve Dashboard: -
+DataDog dashboard is using for monitoring dataserve. Here are metrices in that dashboard,
+Response code based metrices – Cumulative chart for 200, 400 and 500 codes get displayed.
+Name based metrices – Chart for 200, 400, 210 (No documents fetched), 499, 401, 503 and 501 codes get displayed.
+Count based metrices – Chart which shows the count for codes in named based metrices get displayed.
+Split based metrices – Chart for avg. response time, count for single prediction requests, count for multiple prediction requests, 95 percentile response time, 99 percentile response time and region wise response time get displayed.
+Kubernetes – Chart for CPU usage by pod, memory usage by pod and pod running get displayed.
+
+Dataserve basic commands: -
+Windows powershell have been used for running commands. Some of those commands are,
+kubectl get pods -n data-as-api  To fetch pods running in dataserve with the details like status, restarts and age of pods in dataserve.
+kubectl top pods -n data-as-api  To fetch the details of CPU and memory usage of pods in dataserve.
+kubectl get hpa -n data-as-api  To fetch the details like targets, minpods, maxpods, replicas and pod age in dataserve.
+kubectl describe pod -n data-as-api  To fetch the description of specific pod in dataserve.
+
+RCA for Pod Restart in DataServe: -
+Here, I mentioned the template to create root cause analysis (RCA) if there is any pod restart in dataserve.
+Step 1: Issue – Mention the issue with details such as region, pod name, node name, name space.
+Step 2: Analysis – Get pods, top pods, get hpa, CPU usage, memory usage, exit code and pod event            have to be analysed.
+
+
+
+
