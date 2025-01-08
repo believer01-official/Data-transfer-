@@ -1,103 +1,32 @@
-DATASERVE
-
-Introduction: -
-Dataserve is a cloud-based tool for managing and analyzing data. It exposes data as an API i.e., it works as an interface between user and server. It has 3 key elements.
-
-
-
-
-	
-
-
-Fig. 1: Elements of Dataserve
-
-Onboarding and loading have minimum usage only whereas serving has maximum usage. Play_id and Playbuilder_id are two applications served by dataserve for querying data. 
-Play_id
-If the user hit the URL with play_id, then the output will be single prediction. It is a combination of location no. and that particular operating date.
-PlayBuilder_id
-If the user hit the URL with playbuilder_id then the output will be multiple prediction. It is a combination of store no., store starting time and store ending time. Playbuilder_id is basically a collection of data from an organization.
-Tokens
-We have some tokens for identifying, authorization, authentication, etc., of an URL. Bearer token is one among those tokens which is used to authorization of an URL.
-Sample URL for Identifying Dataserve
+Dataserve Documentation
+Introduction
+Dataserve is a cloud-based tool for managing and analyzing data. It exposes data as an API, acting as an interface between the user and the server. It has three key elements: Onboarding, Loading, and Serving. Among these, Serving is the most used element, whereas Onboarding and Loading have minimal usage.
+Dataserve provides two applications for querying data: Play_id and Playbuilder_id. Play_id gives a single prediction based on location number and operating date, whereas Playbuilder_id returns multiple predictions based on store details (store number, start time, and end time). Playbuilder_id is essentially a collection of data from an organization.
+Dataserve uses tokens for identification, authentication, and authorization. The Bearer token is specifically used for URL authorization. A sample URL for identifying Dataserve is:
 https://aireserve-prod.azure-api.net/serve/dat/playbuilder/prod/play
-Dataserve production monitoring should be happen for every 4 hours once.
-
-Onboarding API: -
-It creates an outline for loading data into the server for processing. It’s a onetime activity. Manifest file is used to check the correctness of data that must be onboard. Manifest file uses JSON document. In that document the data can be of two types one is delta and another one is parquet. The manifest file can be identified based on type (data or model), app name (play builder) and dataset name (play or guidance).
-
-Error scenarios
- 
-Fig. 2: Response Codes for Onboarding API
-
-
-
-
-
-
-
-
-
-
-
-Loading (or) Data changer API:  -
-In loading API, the data can be loaded by ROA and AI Reserve team. The loaded data are stored in cosmos DB. Data bricks job created earlier will be triggered. 
-
-Error scenarios
- 
-
-Fig. 3: Response Codes for Loading API
-
-
-
-
-
-
-
-
-
-Serving API: -
-It is a user facing application. It serves data to user that if the user request something then it fetch those data from cosmos DB and give it to the user. It can be triggered using dataserve URL, bearer token, filters, subscription key and correlation ID. Correlation ID can be used to fetch unique request from user. Both play_id and playbuilder_id are used to query the values.
-
-Error scenarios
- 
-
-
-
-
-
-
-
-
-
-
-End to end flow for dataserve: -
-
- 
-
-Fig. 4: Dataserve Architecture
-
-In this process, data can be onboarded by ROA & AI Reserve team with manifest and it responds back to them with assigned job name through onboarding API. After that data can be invoke by a publisher scoring pipeline with assigned job name and respond back to that pipeline with cache refresher run id through loading API. Finally, those ids are invoked with query parameters (play_id & playbuilder_id) by consumer and respond back to them with requested document results through serving API.
-
-Dataserve Dashboard: -
-DataDog dashboard is using for monitoring dataserve. Here are metrices in that dashboard,
-Response code based metrices – Cumulative chart for 200, 400 and 500 codes get displayed.
-Name based metrices – Chart for 200, 400, 210 (No documents fetched), 499, 401, 503 and 501 codes get displayed.
-Count based metrices – Chart which shows the count for codes in named based metrices get displayed.
-Split based metrices – Chart for avg. response time, count for single prediction requests, count for multiple prediction requests, 95 percentile response time, 99 percentile response time and region wise response time get displayed.
-Kubernetes – Chart for CPU usage by pod, memory usage by pod and pod running get displayed.
-
-Dataserve basic commands: -
-Windows powershell have been used for running commands. Some of those commands are,
-kubectl get pods -n data-as-api  To fetch pods running in dataserve with the details like status, restarts and age of pods in dataserve.
-kubectl top pods -n data-as-api  To fetch the details of CPU and memory usage of pods in dataserve.
-kubectl get hpa -n data-as-api  To fetch the details like targets, minpods, maxpods, replicas and pod age in dataserve.
-kubectl describe pod -n data-as-api  To fetch the description of specific pod in dataserve.
-
-RCA for Pod Restart in DataServe: -
-Here, I mentioned the template to create root cause analysis (RCA) if there is any pod restart in dataserve.
-Step 1: Issue – Mention the issue with details such as region, pod name, node name, name space.
-Step 2: Analysis – Get pods, top pods, get hpa, CPU usage, memory usage, exit code and pod event            have to be analysed.
-
-
-
-
+Dataserve production monitoring should occur every 4 hours.
+Onboarding API
+The Onboarding API outlines the process of loading data into the server for processing. It is a one-time activity. The Manifest file is used to ensure the correctness of data onboarded. This file is a JSON document, which contains delta or parquet formatted data. It can be identified based on type (data or model), app name (play builder), and dataset name (play or guidance).
+Loading (or Data Changer) API
+The Loading API allows the ROA and AI Reserve teams to load data into Cosmos DB. Data bricks jobs are triggered once the data is loaded.
+Serving API
+The Serving API is a user-facing application that fetches data from Cosmos DB when a user request is triggered. It can be accessed using the Dataserve URL, bearer token, filters, subscription key, and correlation ID. Correlation ID is used to fetch unique requests from users. Both play_id and playbuilder_id are used to query data.
+End-to-End Flow for Dataserve
+The data onboarding process starts with the ROA & AI Reserve teams submitting the manifest, which triggers the Onboarding API and assigns a job name. This job name is invoked by the publisher scoring pipeline via the Loading API. Finally, the consumer uses play_id or playbuilder_id to query the data via the Serving API.
+Dataserve Dashboard
+Dataserve monitoring is done through DataDog, with several key metrics tracked:
+1. Response Code-Based Metrics: Cumulative charts for 200, 400, and 500 codes.
+2. Name-Based Metrics: Includes charts for codes like 200, 401, 503, 210 (No documents fetched), etc.
+3. Count-Based Metrics: Displays count for the aforementioned response codes.
+4. Split-Based Metrics: Includes average response times, counts for single/multiple prediction requests, percentile response times, and region-based response times.
+5. Kubernetes Metrics: Includes charts for CPU and memory usage by pod and pod status.
+Dataserve Basic Commands
+Windows PowerShell commands for Dataserve operations include:
+1. kubectl get pods -n data-as-api: Fetch details of running pods in Dataserve, including status, restarts, and pod age.
+2. kubectl top pods -n data-as-api: Fetch CPU and memory usage of pods in Dataserve.
+3. kubectl get hpa -n data-as-api: Fetch details like targets, min/max pods, replicas, and pod age.
+4. kubectl describe pod -n data-as-api: Fetch detailed information about a specific pod in Dataserve.
+RCA for Pod Restart in Dataserve
+If a pod restart occurs in Dataserve, a Root Cause Analysis (RCA) is required. The steps to follow are:
+1. Issue: Provide detailed information such as the region, pod name, node name, and namespace.
+2. Analysis: Analyze the pods, top pods, hpa, CPU usage, memory usage, exit codes, and pod events.
