@@ -1,23 +1,5 @@
-Digital Drive-Thru (DDT) Application Documentation
-Introduction
-The Digital Drive-Thru (DDT) application is a cutting-edge system that leverages Artificial Intelligence (AI) and Machine Learning (ML) to provide personalized product recommendations to customers at various drive-thru locations. These recommendations are tailored based on factors such as the store, its location, weather conditions, time of the day, and historical customer purchase data. The system uses reinforcement learning algorithms to analyze past customer behavior and optimize outcomes.
-Key Concepts
-1. Zero Cart
-When there are no items in the customer's cart, the state is referred to as a Zero Cart.
-2. Plus Cart
-When the customer adds products to their cart, it transitions to a Plus Cart. As items are added, the application dynamically refreshes recommendations based on the newly added products.
-Monitoring and Metrics
-The DDT application employs the DataDog dashboard for monitoring purposes. Monitoring is conducted every 8 hours to ensure the smooth functioning of the system. The application is real-time, and low latency is a critical feature.
-Metrics Monitored
-The following metrics are monitored on the DataDog dashboard:
-- Throughput distribution.
-- P95 and P99 application latency.
-- Maximum CPU utilization.
-- Maximum memory utilization.
-- DDT front-end pod details.
-- Worker timeouts (tracked from Azure Kubernetes Service).
-Key Features
-- AI/ML-driven recommendations for personalized customer experiences.
-- Real-time updates with dynamic recommendation refreshes.
-- Low latency for seamless performance.
-- Advanced monitoring using DataDog dashboard and Azure Kubernetes Service.
+### Objective  
+The objective of this document is to provide a comprehensive overview of the **Digital Drive-Thru (DDT) Application**, emphasizing its functionality, architecture, and key operational processes. This application leverages advanced AI/ML-based algorithms to offer real-time product recommendations at drive-thru locations. By utilizing reinforcement learning techniques, the DDT application improves customer experiences by analyzing historical purchasing data and adapting recommendations dynamically. The document also highlights essential monitoring aspects, including performance metrics and latency monitoring through DataDog dashboards, ensuring seamless operation and low latency for real-time customer interactions.  
+
+### Conclusion  
+The **Digital Drive-Thru (DDT) Application** demonstrates the power of AI/ML algorithms in revolutionizing customer service through personalized recommendations. By utilizing real-time data and historical trends, the application enhances the drive-thru experience with optimized product suggestions. The detailed monitoring and performance tracking through DataDog dashboards ensure operational reliability, scalability, and efficiency. With continuous improvements and reinforcement learning, the DDT application remains a vital tool for delivering a superior customer experience, reinforcing its role in modern, data-driven retail environments.
