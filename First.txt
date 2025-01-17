@@ -1,90 +1,183 @@
-Here’s a detailed description of the remaining two phases: **Model Training** and **Monarch Workflow**:  
+Below is the detailed document structure for the information provided:
 
 ---
 
-## **Model Training Phase**  
+# **Starbucks "Usuals" Application Documentation**  
 
-The **Model Training Phase** is a critical step in the NGP pipeline where data from the **Feature Phase** is utilized to train machine learning models. The models are designed to generate personalized Starbucks offers by analyzing customer data and behavior patterns.  
-
-### **Key Objectives**  
-- Leverage the prepared delta table data to train accurate machine learning models.  
-- Identify patterns, preferences, and trends from historical and real-time data.  
-- Develop models that predict the most relevant offers for individual customers.  
-
-### **Steps Involved**  
-1. **Data Preparation**:  
-   - Clean and preprocess the data from the delta table to ensure quality and consistency.  
-   - Apply transformations to align the data with the model’s requirements.  
-
-2. **Feature Selection**:  
-   - Select the most relevant features (e.g., purchase history, demographics, preferences) for model training.  
-
-3. **Model Selection**:  
-   - Choose appropriate machine learning algorithms based on the data and business objectives (e.g., recommendation systems, clustering, or classification models).  
-
-4. **Training the Model**:  
-   - Train the model using scalable PySpark-based workflows for handling large datasets.  
-   - Ensure hyperparameter tuning to optimize the model’s performance.  
-
-5. **Validation**:  
-   - Validate the trained model using a test dataset.  
-   - Measure performance metrics like precision, recall, and accuracy to ensure reliability.  
-
-6. **Deployment Readiness**:  
-   - Save the trained model and metadata into a **model registry** for version control and future deployment.  
-
-### **Outputs**  
-- Trained machine learning models ready for deployment in the Monarch Workflow phase.  
-- Performance metrics and insights for monitoring and evaluation.  
+## **Table of Contents**  
+1. [Introduction](#introduction)  
+2. [Overview of the Application](#overview-of-the-application)  
+3. [Pipelines Overview](#pipelines-overview)  
+4. [Detailed Pipeline Descriptions](#detailed-pipeline-descriptions)  
+   - [Usuals Aggregate Pipeline](#usuals-aggregate-pipeline)  
+   - [Seasonal Product Boosting Pipeline](#seasonal-product-boosting-pipeline)  
+   - [KPI Pipeline](#kpi-pipeline)  
+   - [Load and Switch Views Pipeline](#load-and-switch-views-pipeline)  
+   - [Similar Items Pipelines](#similar-items-pipelines)  
+5. [Technical Details](#technical-details)  
+6. [Key Highlights](#key-highlights)  
+7. [Conclusion](#conclusion)  
 
 ---
 
-## **Monarch Workflow Phase**  
+## **1. Introduction**  
+The **Starbucks Usuals Application** aims to enhance the user experience by presenting a **"Quick Order" card** on the Starbucks mobile app, based on customers' usual transactions. This card minimizes the effort required for users to reorder their favorite items with the fewest clicks.  
 
-The **Monarch Workflow Phase** serves as the orchestration layer, coordinating the execution of all components in the pipeline, from feature extraction to the final delivery of personalized emails.  
-
-### **Key Objectives**  
-- Seamlessly integrate all phases of the NGP pipeline.  
-- Ensure timely and accurate execution of feature ingestion, model training, and email delivery.  
-- Monitor and handle dependencies, failures, and notifications.  
-
-### **Steps Involved**  
-1. **Workflow Orchestration**:  
-   - Utilize **Airflow** to define and manage Directed Acyclic Graphs (DAGs) for the pipeline.  
-   - Automate tasks such as feature ingestion, model training, anomaly detection, and email dispatch.  
-
-2. **Dependency Management**:  
-   - Monitor and ensure the completion of prerequisite tasks before starting dependent ones.  
-   - Use **sensors** to verify database conditions and external pipeline completion.  
-
-3. **Data Integration**:  
-   - Fetch data from various sources and integrate it into a single workflow for consistent processing.  
-
-4. **Execution of Models**:  
-   - Load the trained models from the **model registry** and execute them on the current data.  
-   - Generate predictions for personalized offers.  
-
-5. **Anomaly Detection**:  
-   - Run the **Expectations Module** to detect anomalies in the data or predictions.  
-   - Generate and email a detailed HTML report for anomalies.  
-
-6. **Email Dispatch**:  
-   - Use the **Emailers Module** to send personalized offers to customers.  
-   - Include anomaly insights if applicable.  
-
-7. **Monitoring and Logging**:  
-   - Monitor the execution of workflows through Airflow’s UI.  
-   - Log all activities, including execution status, failures, and notifications, for audit and debugging.  
-
-### **Outputs**  
-- Personalized offer emails delivered to customers.  
-- Consolidated logs and metrics for monitoring pipeline performance.  
+The application aggregates data from **in-store** and **mobile transactions** to provide a holistic view of customer interactions and recommends the most appropriate order for specific times of the day and week.  
 
 ---
 
-## **Additional Notes**  
-- **Scalability**: The Monarch Workflow can scale to handle increasing data volumes and customer counts.  
-- **Error Handling**: Includes automated retries, alerts, and notifications for failure scenarios.  
-- **Real-time Insights**: Provides real-time execution status and logs for quick debugging and analysis.  
+## **2. Overview of the Application**  
+### **Objective**:  
+- **Usuals Order**: Present the customer's most frequent order for the given time and day.  
+- **Seasonal Recommendations**: Highlight seasonal products the customer might enjoy.  
+- **Similar Items**: Suggest alternative products when an item is out of stock.  
 
-Would you like to include a flow diagram or examples for these phases?
+### **Technology Stack**:  
+- **Azure Data Factory (ADF)** for data pipelines.  
+- **Azure Data Lake Storage (ADLS)** for intermediate data storage.  
+- **Cosine Similarity** for calculating product similarities.  
+- **Redis** for fast data retrieval.  
+
+---
+
+## **3. Pipelines Overview**  
+
+| **Pipeline**                    | **Purpose**                                                                 | **Frequency**         | **Average Runtime**     |  
+|----------------------------------|-----------------------------------------------------------------------------|-----------------------|-------------------------|  
+| Usuals Aggregate Main           | Provide the most appropriate "Quick Order" card for users.                  | Weekly (Saturday)     | 7 hours                |  
+| Seasonal Product Boosting Main  | Identify seasonal product purchases for recommendation optimization.         | Weekly (Saturday)     | 33 minutes             |  
+| KPI Pipeline Main               | Process clickstream data and store it in ADLS and SQL Delta Tables.          | Daily                 | 15-17 minutes          |  
+| Load and Switch Views Main      | Upload data from Usuals Delta Paths into Usuals SQL DB.                      | Weekly (Tues/Wed)     | 20 min (Tue), 4 hrs (Wed) |  
+| Similar_items_Master            | Generate category similarity data for "Similar Items" feature.               | Weekly (Saturday)     | 25 minutes             |  
+| Upload_to_redis                 | Upload category similarity data into Redis for faster retrieval.             | Weekly (Saturday)     | 10 minutes             |  
+
+---
+
+## **4. Detailed Pipeline Descriptions**  
+
+### **Usuals Aggregate Pipeline**  
+**Goal**:  
+- Provide the user with a "Quick Order" card by presenting their usual order for a specific time of day and day of the week.  
+
+**Details**:  
+- Aggregates both **in-store** and **mobile app transactions** to generate a holistic view.  
+- Uses advanced logic to identify patterns in customer preferences.  
+
+**Technology**:  
+- **ADF** for data orchestration.  
+- Scheduled **weekly on Saturdays**.  
+
+**Runtime**:  
+- Average: **7 hours**.  
+
+---
+
+### **Seasonal Product Boosting Pipeline**  
+**Goal**:  
+- Identify customer preferences for seasonal products.  
+- Optimize recommendations for seasonal items.  
+
+**Details**:  
+- Analyzes transaction data to determine seasonal product purchases.  
+- Enhances the likelihood of seasonal product selection during recommendations.  
+
+**Technology**:  
+- **ADF** for data processing.  
+- Scheduled **weekly on Saturdays**.  
+
+**Runtime**:  
+- Average: **33 minutes**.  
+
+---
+
+### **KPI Pipeline**  
+**Goal**:  
+- Process clickstream data from the Starbucks mobile application.  
+- Write intermediary data to **ADLS Delta Tables** and a final SQL table.  
+
+**Details**:  
+- Tracks customer interactions and behaviors.  
+- Processes large volumes of real-time clickstream data.  
+
+**Technology**:  
+- **ADF** for orchestration.  
+- Scheduled **daily**.  
+
+**Runtime**:  
+- Average: **15-17 minutes**.  
+
+---
+
+### **Load and Switch Views Pipeline**  
+**Goal**:  
+- Read data from Usuals Delta Paths and load it into the Usuals SQL database.  
+- Maintain database views for quick access.  
+
+**Details**:  
+- Handles data synchronization between Delta Tables and SQL DB.  
+- Runs on **Tuesdays and Wednesdays** for optimal data availability.  
+
+**Technology**:  
+- **ADF** for execution.  
+
+**Runtime**:  
+- **Tuesday**: **20 minutes**.  
+- **Wednesday**: **4 hours**.  
+
+---
+
+### **Similar Items Pipelines**  
+
+#### **Similar_items_Master**  
+**Goal**:  
+- Generate a similarity matrix for Starbucks menu items based on ingredients.  
+- Output aggregated category similarity information.  
+
+**Details**:  
+- Uses **cosine similarity** to compute relationships between items.  
+- Stores results in **ADLS Delta Paths** for further usage.  
+
+**Technology**:  
+- **ADF** for orchestration.  
+- Scheduled **weekly on Saturdays**.  
+
+**Runtime**:  
+- Average: **25 minutes**.  
+
+#### **Upload_to_redis**  
+**Goal**:  
+- Upload similarity data from Delta Paths to Redis for fast retrieval.  
+
+**Details**:  
+- Ensures high-speed data availability for the application.  
+
+**Technology**:  
+- **ADF** for execution.  
+- Scheduled **weekly on Saturdays**.  
+
+**Runtime**:  
+- Average: **10 minutes**.  
+
+---
+
+## **5. Technical Details**  
+- **Cosine Similarity**: Used for comparing item similarities based on keywords and ingredients.  
+- **Redis**: Provides a low-latency storage solution for serving recommendations.  
+- **Delta Tables**: Intermediate storage layer used to store processed data for downstream consumption.  
+
+---
+
+## **6. Key Highlights**  
+- Comprehensive **"Quick Order" functionality** minimizing user effort.  
+- Real-time **KPI tracking** for better understanding of user behavior.  
+- Robust seasonal and alternative item recommendations based on data analytics.  
+
+---
+
+## **7. Conclusion**  
+The Starbucks Usuals Application leverages advanced analytics and modern cloud infrastructure to enhance user experience. With efficient pipelines, real-time tracking, and optimized recommendations, it ensures personalized customer engagement while maintaining scalability and reliability.  
+
+--- 
+
+Would you like to include diagrams or flowcharts for these pipelines?
