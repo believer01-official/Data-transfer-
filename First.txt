@@ -1,116 +1,90 @@
-Here’s a detailed and professional documentation structure for the **Next Generation Platform (NGP)**:  
+Here’s a detailed description of the remaining two phases: **Model Training** and **Monarch Workflow**:  
 
 ---
 
-# **Next Generation Platform (NGP) Documentation**  
+## **Model Training Phase**  
 
-## **Table of Contents**  
-1. [Introduction](#introduction)  
-2. [System Overview](#system-overview)  
-3. [Key Phases of NGP](#key-phases-of-ngp)  
-   - [Feature Phase](#feature-phase)  
-   - [Model Training](#model-training)  
-   - [Monarch Workflow](#monarch-workflow)  
-4. [Feature Phase: Detailed Description](#feature-phase-detailed-description)  
-   - [Data Extraction and Arrangement](#data-extraction-and-arrangement)  
-   - [Feature Pipelines](#feature-pipelines)  
-   - [Sensors](#sensors)  
-   - [Feature Ingestion](#feature-ingestion)  
-5. [Expectations Module](#expectations-module)  
-6. [Emailers](#emailers)  
-7. [Final Output](#final-output)  
+The **Model Training Phase** is a critical step in the NGP pipeline where data from the **Feature Phase** is utilized to train machine learning models. The models are designed to generate personalized Starbucks offers by analyzing customer data and behavior patterns.  
 
----
+### **Key Objectives**  
+- Leverage the prepared delta table data to train accurate machine learning models.  
+- Identify patterns, preferences, and trends from historical and real-time data.  
+- Develop models that predict the most relevant offers for individual customers.  
 
-## **1. Introduction**  
-The **Next Generation Platform (NGP)** is a scalable and efficient PySpark-based application, managed through **Airflow**, designed to deliver **personalized Starbucks offers** via email.  
+### **Steps Involved**  
+1. **Data Preparation**:  
+   - Clean and preprocess the data from the delta table to ensure quality and consistency.  
+   - Apply transformations to align the data with the model’s requirements.  
 
-NGP leverages advanced data processing, model training, and workflow management to extract, process, and utilize data from various sources to generate highly targeted recommendations for customers.  
+2. **Feature Selection**:  
+   - Select the most relevant features (e.g., purchase history, demographics, preferences) for model training.  
 
-### **Purpose**  
-The primary objective of NGP is to streamline and automate the process of sending personalized offers, enhancing customer engagement and satisfaction.  
+3. **Model Selection**:  
+   - Choose appropriate machine learning algorithms based on the data and business objectives (e.g., recommendation systems, clustering, or classification models).  
 
----
+4. **Training the Model**:  
+   - Train the model using scalable PySpark-based workflows for handling large datasets.  
+   - Ensure hyperparameter tuning to optimize the model’s performance.  
 
-## **2. System Overview**  
-- **Technology Stack**:  
-  - PySpark  
-  - Airflow  
-  - Databricks  
-  - Azure Data Lake Storage (ADLS)  
-- **Goal**: To deliver personalized Starbucks offers to customers through email.  
-- **Output**: Highly targeted and personalized email recommendations.  
+5. **Validation**:  
+   - Validate the trained model using a test dataset.  
+   - Measure performance metrics like precision, recall, and accuracy to ensure reliability.  
+
+6. **Deployment Readiness**:  
+   - Save the trained model and metadata into a **model registry** for version control and future deployment.  
+
+### **Outputs**  
+- Trained machine learning models ready for deployment in the Monarch Workflow phase.  
+- Performance metrics and insights for monitoring and evaluation.  
 
 ---
 
-## **3. Key Phases of NGP**  
+## **Monarch Workflow Phase**  
 
-### **Feature Phase**  
-- Extract data from various sources (e.g., EDAP) and organize it into a **final delta table** for further processing.  
+The **Monarch Workflow Phase** serves as the orchestration layer, coordinating the execution of all components in the pipeline, from feature extraction to the final delivery of personalized emails.  
 
-### **Model Training**  
-- Use the delta table data to train machine learning models for creating personalized offers.  
+### **Key Objectives**  
+- Seamlessly integrate all phases of the NGP pipeline.  
+- Ensure timely and accurate execution of feature ingestion, model training, and email delivery.  
+- Monitor and handle dependencies, failures, and notifications.  
 
-### **Monarch Workflow**  
-- Manage and coordinate all activities to ensure seamless transitions from data ingestion to personalized email delivery.  
+### **Steps Involved**  
+1. **Workflow Orchestration**:  
+   - Utilize **Airflow** to define and manage Directed Acyclic Graphs (DAGs) for the pipeline.  
+   - Automate tasks such as feature ingestion, model training, anomaly detection, and email dispatch.  
 
----
+2. **Dependency Management**:  
+   - Monitor and ensure the completion of prerequisite tasks before starting dependent ones.  
+   - Use **sensors** to verify database conditions and external pipeline completion.  
 
-## **4. Feature Phase: Detailed Description**  
+3. **Data Integration**:  
+   - Fetch data from various sources and integrate it into a single workflow for consistent processing.  
 
-### **Data Extraction and Arrangement**  
-- Extract and process data from **EDAP** and other sources.  
-- Arrange the data into a structured **delta table** for downstream usage.  
-- Dynamically generate code during pipeline execution, saved in **ADLS** at two locations for redundancy.  
+4. **Execution of Models**:  
+   - Load the trained models from the **model registry** and execute them on the current data.  
+   - Generate predictions for personalized offers.  
 
-### **Feature Pipelines**  
-- **Pipelines in Operation**:  
-  - **10 pipelines** currently active in the pre-production environment.  
-- **Key Activities**:  
-  - **Concurrency Management**: Ensures efficient parallel execution.  
-  - **Run ID and DS Value Tracking**: Logs execution metadata.  
-  - **Interactive Clusters**: Supports real-time data processing.  
-  - **NGP Run Status**: Monitors overall execution progress.  
-  - **Generated Programs**: Dynamically created and stored programs.  
+5. **Anomaly Detection**:  
+   - Run the **Expectations Module** to detect anomalies in the data or predictions.  
+   - Generate and email a detailed HTML report for anomalies.  
 
-### **Sensors**  
-Sensors ensure all conditions are met before ingestion:  
-1. **Databricks Table Sensor**: Verifies database conditions.  
-2. **External Sensors**: Ensures dependent pipelines are completed.  
+6. **Email Dispatch**:  
+   - Use the **Emailers Module** to send personalized offers to customers.  
+   - Include anomaly insights if applicable.  
 
-### **Feature Ingestion**  
-- Core data processing phase where data extraction and ejection occur.  
-- **Key Classes**:  
-  - **Sequel Operation Class**: Handles feature extraction tasks.  
-  - **PySpark Operator Class**: Executes Spark-based operations.  
-  - **PyScript Operator Class**: Facilitates custom script execution.  
+7. **Monitoring and Logging**:  
+   - Monitor the execution of workflows through Airflow’s UI.  
+   - Log all activities, including execution status, failures, and notifications, for audit and debugging.  
 
----
-
-## **5. Expectations Module**  
-The expectations module is responsible for:  
-- Detecting anomalies in the data.  
-- Producing a detailed **HTML report** of detected anomalies.  
-- Emailing the report for review and corrective action.  
+### **Outputs**  
+- Personalized offer emails delivered to customers.  
+- Consolidated logs and metrics for monitoring pipeline performance.  
 
 ---
 
-## **6. Emailers**  
-- Configured with:  
-  - Recipient email addresses.  
-  - An email-level indicator (e.g., "detect") to control email dispatch.  
-- Emails include detailed insights into anomalies or execution outcomes.  
+## **Additional Notes**  
+- **Scalability**: The Monarch Workflow can scale to handle increasing data volumes and customer counts.  
+- **Error Handling**: Includes automated retries, alerts, and notifications for failure scenarios.  
+- **Real-time Insights**: Provides real-time execution status and logs for quick debugging and analysis.  
 
----
-
-## **7. Final Output**  
-The NGP process concludes with the delivery of **personalized emails** to Starbucks customers, combining the results of robust data extraction, processing, and machine learning workflows.  
-
----
-
-## **Conclusion**  
-The Next Generation Platform (NGP) is a cutting-edge solution that integrates modern data engineering and machine learning techniques to deliver personalized customer experiences. By leveraging the NGP framework, Starbucks ensures timely and accurate delivery of offers, fostering enhanced customer engagement.  
-
----
-
-Would you like any further customization, such as flow diagrams, visuals, or additional technical details?
+Would you like to include a flow diagram or examples for these phases?
