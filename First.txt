@@ -1,1 +1,138 @@
-This document provides an overview of the **YMAL** application, which offers personalized alternative recommendations in Starbucks' "You May Also Like" section. As a challenger to the getrecs system, YMAL enhances recommendations by leveraging customer data. It covers the workflow, model training, and deployment within Azure for effective integration.
+Sure! Here's the updated slide-by-slide content with each pipeline on a separate slide:
+
+---
+
+### **Slide 1: Title Slide**  
+**Title**: Usuals and Similar Items  
+**Subtitle**: Starbucks Application Overview  
+
+---
+
+### **Slide 2: Objective**  
+**Content**:  
+- **Usuals Order**: Present the customer's most frequent order for the given time and day.  
+- **Seasonal Recommendations**: Highlight seasonal products the customer might enjoy.  
+- **Similar Items**: Suggest alternative products when an item is out of stock.  
+
+---
+
+### **Slide 3: Introduction to Usuals**  
+**Content**:  
+- The Starbucks Usuals Application enhances user experience with a "Quick Order" card on the app.  
+- Aggregates **in-store** and **mobile transactions** to recommend orders based on specific times and days.  
+
+---
+
+### **Slide 4: Technology Stack**  
+**Content**:  
+- **Azure Data Factory (ADF)**: For orchestrating data pipelines.  
+- **Azure Data Lake Storage (ADLS)**: For intermediate data storage.  
+- **Cosine Similarity**: For calculating product similarities.  
+- **Redis**: For fast data retrieval.  
+
+---
+
+### **Slide 5: Usuals Aggregate Pipeline**  
+**Content**:  
+- **Goal**: Provide the user with a "Quick Order" card for specific times of the day and week.  
+- **Details**:  
+  - Aggregates both in-store and mobile app transactions.  
+  - Identifies customer preference patterns.  
+- **Technology**: ADF for data orchestration.  
+- **Schedule**: Weekly on Saturdays.  
+- **Runtime**: 7 hours.  
+
+---
+
+### **Slide 6: Seasonal Product Boosting Pipeline**  
+**Content**:  
+- **Goal**: Optimize recommendations for seasonal products.  
+- **Details**:  
+  - Analyzes transaction data to identify seasonal product preferences.  
+  - Boosts seasonal product selection likelihood in recommendations.  
+- **Technology**: ADF for data processing.  
+- **Schedule**: Weekly on Saturdays.  
+- **Runtime**: 33 minutes.  
+
+---
+
+### **Slide 7: KPI Pipeline**  
+**Content**:  
+- **Goal**: Process clickstream data from the Starbucks mobile application.  
+- **Details**:  
+  - Tracks user interactions and behaviors.  
+  - Writes intermediary data to ADLS Delta Tables and SQL Tables.  
+- **Technology**: ADF for orchestration.  
+- **Schedule**: Daily.  
+- **Runtime**: 15-17 minutes.  
+
+---
+
+### **Slide 8: Load and Switch Views Pipeline**  
+**Content**:  
+- **Goal**: Sync data between Usuals Delta Paths and SQL DB for quick access.  
+- **Details**:  
+  - Reads data from Delta Tables and loads it into SQL.  
+  - Maintains database views for optimal performance.  
+- **Technology**: ADF for execution.  
+- **Schedule**: Weekly on Tuesday and Wednesday.  
+- **Runtime**: Tuesday - 20 minutes, Wednesday - 4 hours.  
+
+---
+
+### **Slide 9: Similar_items_Master Pipeline**  
+**Content**:  
+- **Goal**: Generate category similarity data for the "Similar Items" feature.  
+- **Details**:  
+  - Uses cosine similarity to compute relationships between menu items.  
+  - Stores results in ADLS Delta Paths.  
+- **Technology**: ADF for orchestration.  
+- **Schedule**: Weekly on Saturdays.  
+- **Runtime**: 25 minutes.  
+
+---
+
+### **Slide 10: Upload_to_redis Pipeline**  
+**Content**:  
+- **Goal**: Upload similarity data from Delta Paths to Redis for fast retrieval.  
+- **Details**:  
+  - Ensures low-latency data availability for applications.  
+- **Technology**: ADF for execution.  
+- **Schedule**: Weekly on Saturdays.  
+- **Runtime**: 10 minutes.  
+
+---
+
+### **Slide 11: Technical Details & Highlights**  
+**Content**:  
+- **Technical Details**:  
+  - Cosine Similarity: For item comparison.  
+  - Redis: Low latency storage for recommendations.  
+  - Delta Tables: Intermediate storage for downstream processes.  
+- **Key Highlights**:  
+  - Comprehensive "Quick Order" feature minimizes user effort.  
+  - Real-time KPI tracking for user behavior insights.  
+  - Robust seasonal and alternative item recommendations.  
+
+---
+
+### **Slide 12: Metrics Monitored**  
+**Content**:  
+Monitored metrics include:  
+- Throughput distribution.  
+- Application latency (P95, P99).  
+- Redis latency (P95, P99).  
+- CPU and memory usage by pod.  
+- Log count distributions.  
+- Pods running.  
+
+---
+
+### **Slide 13: Conclusion**  
+**Content**:  
+- The Starbucks Usuals Application leverages advanced analytics and modern cloud infrastructure.  
+- It provides personalized customer engagement with efficient pipelines, real-time tracking, and optimized recommendations.  
+
+---
+
+Let me know if you'd like any further changes!
