@@ -1,138 +1,126 @@
-Sure! Here's the updated slide-by-slide content with each pipeline on a separate slide:
+Here’s the revised outline, splitting each pipeline into separate slides with detailed yet concise information for better clarity.
 
 ---
 
-### **Slide 1: Title Slide**  
-**Title**: Usuals and Similar Items  
-**Subtitle**: Starbucks Application Overview  
+### **Slide 1: Title Slide**
+- **Title**: GetRecs: Mobile-Based Store Recommendation Application  
+- **Subtitle**: Enhancing Customer Experience with Intelligent Recommendations  
+- **Your Name & Date**
 
 ---
 
-### **Slide 2: Objective**  
-**Content**:  
-- **Usuals Order**: Present the customer's most frequent order for the given time and day.  
-- **Seasonal Recommendations**: Highlight seasonal products the customer might enjoy.  
-- **Similar Items**: Suggest alternative products when an item is out of stock.  
+### **Slide 2: Objective**
+- **Goal**: Provide store-specific, dynamic recommendations for better shopping experiences.  
+- **Approach**:  
+  - Utilize historical purchase data.  
+  - Incorporate seasonal trends.  
+  - Ensure product availability in recommendations.  
 
 ---
 
-### **Slide 3: Introduction to Usuals**  
-**Content**:  
-- The Starbucks Usuals Application enhances user experience with a "Quick Order" card on the app.  
-- Aggregates **in-store** and **mobile transactions** to recommend orders based on specific times and days.  
+### **Slide 3: Pipeline Overview**
+- **Purpose**: Manage data flow and process recommendations.  
+- **Pipelines**:  
+  1. Store_Details  
+  2. POS_Data  
+  3. db_etl  
+  4. Upload_to_Redis  
+  5. Data Loading & Switching  
 
 ---
 
-### **Slide 4: Technology Stack**  
-**Content**:  
-- **Azure Data Factory (ADF)**: For orchestrating data pipelines.  
-- **Azure Data Lake Storage (ADLS)**: For intermediate data storage.  
-- **Cosine Similarity**: For calculating product similarities.  
-- **Redis**: For fast data retrieval.  
+### **Slide 4: Store_Details Pipeline**
+- **Purpose**: Fetch and update store-specific data.  
+- **Process**:  
+  - Extract details from EDAP table.  
+  - Aggregate and save to Delta path.  
+- **Key Notes**:  
+  - Runs weekly (Monday) for 10 minutes.  
+  - If it fails, previous week's data is used.  
+- **Outcome**:  
+  - Updated store details ensure accurate recommendations.
 
 ---
 
-### **Slide 5: Usuals Aggregate Pipeline**  
-**Content**:  
-- **Goal**: Provide the user with a "Quick Order" card for specific times of the day and week.  
-- **Details**:  
-  - Aggregates both in-store and mobile app transactions.  
-  - Identifies customer preference patterns.  
-- **Technology**: ADF for data orchestration.  
-- **Schedule**: Weekly on Saturdays.  
-- **Runtime**: 7 hours.  
+### **Slide 5: POS_Data Pipeline**
+- **Purpose**: Create customer-product transactional data.  
+- **Process**:  
+  - Fetch product data via REST API.  
+  - Combine with EDAP data to create transactional records.  
+- **Key Notes**:  
+  - Runs daily for 22 minutes.  
+  - Inputs POS data into the db_etl pipeline.  
+- **Outcome**:  
+  - Generates accurate, real-time product data.
 
 ---
 
-### **Slide 6: Seasonal Product Boosting Pipeline**  
-**Content**:  
-- **Goal**: Optimize recommendations for seasonal products.  
-- **Details**:  
-  - Analyzes transaction data to identify seasonal product preferences.  
-  - Boosts seasonal product selection likelihood in recommendations.  
-- **Technology**: ADF for data processing.  
-- **Schedule**: Weekly on Saturdays.  
-- **Runtime**: 33 minutes.  
+### **Slide 6: db_etl Pipeline**
+- **Purpose**: Generate features for recommendations.  
+- **Process**:  
+  - Load POS_Data output into 9 notebooks.  
+  - Create Delta path for processed features.  
+- **Key Notes**:  
+  - Runs weekly (Tuesday) for 3 hours.  
+- **Notebooks**:  
+  1. Product Pricing  
+  2. Product Pairings (Compliment & Non-Compliment)  
+  3. Context Similarity  
+  4. Most Frequent SKU  
+  5. Popular Products  
+  6. User-Product Interaction  
+  7. Validation  
 
 ---
 
-### **Slide 7: KPI Pipeline**  
-**Content**:  
-- **Goal**: Process clickstream data from the Starbucks mobile application.  
-- **Details**:  
-  - Tracks user interactions and behaviors.  
-  - Writes intermediary data to ADLS Delta Tables and SQL Tables.  
-- **Technology**: ADF for orchestration.  
-- **Schedule**: Daily.  
-- **Runtime**: 15-17 minutes.  
+### **Slide 7: Upload_to_Redis Pipeline**
+- **Purpose**: Upload processed features to Redis cache.  
+- **Process**:  
+  - Excludes "User-Product Interaction" features.  
+  - Transfers data from Delta path to Redis.  
+- **Key Notes**:  
+  - Runs weekly (Wednesday) for 15 minutes.  
+- **Outcome**:  
+  - Enables faster access to recommendation data.
 
 ---
 
-### **Slide 8: Load and Switch Views Pipeline**  
-**Content**:  
-- **Goal**: Sync data between Usuals Delta Paths and SQL DB for quick access.  
-- **Details**:  
-  - Reads data from Delta Tables and loads it into SQL.  
-  - Maintains database views for optimal performance.  
-- **Technology**: ADF for execution.  
-- **Schedule**: Weekly on Tuesday and Wednesday.  
-- **Runtime**: Tuesday - 20 minutes, Wednesday - 4 hours.  
+### **Slide 8: Data Loading & Switching Pipeline**
+- **Purpose**: Load "User-Product Interaction" data into SQL Server.  
+- **Process**:  
+  - Extract from Delta path and load into SQL.  
+- **Key Notes**:  
+  - Runs weekly (Wednesday) for 4 hours 50 minutes.  
+- **Outcome**:  
+  - Finalizes the recommendation data for GetRecs.
 
 ---
 
-### **Slide 9: Similar_items_Master Pipeline**  
-**Content**:  
-- **Goal**: Generate category similarity data for the "Similar Items" feature.  
-- **Details**:  
-  - Uses cosine similarity to compute relationships between menu items.  
-  - Stores results in ADLS Delta Paths.  
-- **Technology**: ADF for orchestration.  
-- **Schedule**: Weekly on Saturdays.  
-- **Runtime**: 25 minutes.  
+### **Slide 9: Monitoring & Metrics**
+- **Metrics Tracked**:  
+  - Recommendation accuracy.  
+  - User engagement.  
+  - Inventory turnover.  
+  - System latency and resource usage.  
+- **Tools**:  
+  - Logs, latency graphs, and pod metrics.  
 
 ---
 
-### **Slide 10: Upload_to_redis Pipeline**  
-**Content**:  
-- **Goal**: Upload similarity data from Delta Paths to Redis for fast retrieval.  
-- **Details**:  
-  - Ensures low-latency data availability for applications.  
-- **Technology**: ADF for execution.  
-- **Schedule**: Weekly on Saturdays.  
-- **Runtime**: 10 minutes.  
+### **Slide 10: Benefits of GetRecs**
+1. **Personalized Shopping Experience**  
+   - Tailored and dynamic suggestions.  
+2. **Increased Sales**  
+   - Upselling and cross-selling opportunities.  
+3. **Better Inventory Management**  
+   - Focus on available and seasonal products.  
 
 ---
 
-### **Slide 11: Technical Details & Highlights**  
-**Content**:  
-- **Technical Details**:  
-  - Cosine Similarity: For item comparison.  
-  - Redis: Low latency storage for recommendations.  
-  - Delta Tables: Intermediate storage for downstream processes.  
-- **Key Highlights**:  
-  - Comprehensive "Quick Order" feature minimizes user effort.  
-  - Real-time KPI tracking for user behavior insights.  
-  - Robust seasonal and alternative item recommendations.  
+### **Slide 11: Conclusion**
+- GetRecs combines data-driven insights with real-time processing to enhance customer experiences and store profitability.  
+- Efficient pipelines ensure accurate and timely recommendations.
 
 ---
 
-### **Slide 12: Metrics Monitored**  
-**Content**:  
-Monitored metrics include:  
-- Throughput distribution.  
-- Application latency (P95, P99).  
-- Redis latency (P95, P99).  
-- CPU and memory usage by pod.  
-- Log count distributions.  
-- Pods running.  
-
----
-
-### **Slide 13: Conclusion**  
-**Content**:  
-- The Starbucks Usuals Application leverages advanced analytics and modern cloud infrastructure.  
-- It provides personalized customer engagement with efficient pipelines, real-time tracking, and optimized recommendations.  
-
----
-
-Let me know if you'd like any further changes!
+This structure ensures each pipeline is presented in its own slide with sufficient detail. Let me know if you’d like to refine any part!
