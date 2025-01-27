@@ -1,86 +1,267 @@
-Here’s a structured presentation outline exclusively for the **YMAL Application**:
+Thanks for sharing the details! I’ll frame a comprehensive yet concise documentation that captures the essence of the batch bake and store segmentation processes, including the pipelines and workflows. Let me get started.
+
+# Batch Bake and Store Segmentation Documentation  
+
+## Batch Bake Overview  
+Batch Bake processes are designed to optimize bakery operations by managing schedules, inventory, and forecasting demand. These pipelines handle tasks like SKU assignment, schedule pushing, and sales forecasting, ensuring efficient workflows and timely data updates.
 
 ---
 
-### **Slide 1: Title Slide**
-- **Title**: **YMAL (You May Also Like) Application**
-- **Subtitle**: Enhancing Personalized Recommendations for Starbucks Customers  
+## Pipelines in Batch Bake  
+
+### **1. Assign SKUs to Stores**  
+- **Purpose**:  
+  Updates a mapping table to associate stores and notional products with SKUs based on bakery temperatures (frozen/ambient).  
+
+- **Workflow**:  
+  1. Collect data from inventory management on store and product relationships.  
+  2. Assign SKUs to stores using bakery temperature data.  
+  3. Validate data for uniqueness and null checks using **cuallee**.  
+
+- **Business Value**:  
+  Medium – Output is foundational but not time-critical if delayed.  
+
+- **Support Details**:  
+  - Platform: Databricks  
+  - Frequency: Weekly  
+  - SLA: 20 minutes  
+
+- **Failure Points**:  
+  - **Data Validation Errors**: Ensure data integrity.  
+  - **Transitioning Supply Chains**: Handle stores with multiple SKUs carefully.
 
 ---
 
-### **Slide 2: Introduction**
-**Definition**:  
-YMAL (You May Also Like) is a Starbucks application designed to provide personalized alternative product recommendations.  
+### **2. Push Bake Schedule**  
+- **Purpose**:  
+  Publishes bake schedules to store iPads and updates receipts for tracking schedules sent.  
 
-**Key Objective**:  
-To act as a challenger to the existing GetRecs system by offering alternative suggestions tailored to individual customer preferences.  
+- **Workflow**:  
+  1. Generate weekly schedule blobs in JSON format with metadata.  
+  2. Send schedules to SPC Azure storage.  
+  3. Update tables to log sent schedules.  
 
----
+- **Business Value**:  
+  High – Ensures timely delivery of schedules to stores.  
 
-### **Slide 3: Key Features**
-1. **Alternative Recommendations**:  
-   - Offers alternative suggestions based on customer transaction data and preferences.  
-2. **Integration with GetRecs**:  
-   - Works alongside GetRecs to enhance the diversity of recommendations.  
-3. **Continuous Personalization**:  
-   - Continuously refines recommendations using real-time customer data.  
+- **Support Details**:  
+  - Platform: Databricks  
+  - Frequency: Weekly  
+  - SLA: 20 minutes  
 
----
-
-### **Slide 4: Workflow**
-1. **Data Collection**:  
-   - Gathers customer transaction data, preferences, and contextual information.  
-2. **Feature Extraction**:  
-   - Processes data for product categories, customer patterns, and seasonal trends.  
-3. **Model Training**:  
-   - Builds a machine learning model to generate personalized suggestions.  
-4. **Recommendation Generation**:  
-   - Creates recommendations displayed under the 'You May Also Like' section.  
-5. **Integration with GetRecs**:  
-   - Compares and complements GetRecs recommendations for a better user experience.  
+- **Failure Points**:  
+  - **Schedule Updates Missing**: Ensures previous schedules remain available.  
 
 ---
 
-### **Slide 5: Architecture**
-- **Technology Stack**:  
-   - **PySpark**: Data processing and feature extraction.  
-   - **Azure**: Hosting and managing cloud resources.  
-   - **Airflow**: Orchestration and workflow scheduling.  
-   - **Machine Learning Models**: Powering recommendation generation.  
+### **3. Train, Forecast, and Allocate Bake Schedule**  
+- **Purpose**:  
+  Core pipeline for Batch Bake, responsible for training models, forecasting demand, and allocating schedules.  
 
-- **Integration with Starbucks App**:  
-   - Recommendations are displayed in real-time under the 'You May Also Like' section for seamless user interaction.  
+- **Workflow**:  
+  1. Train model with half-hourly sales data.  
+  2. Forecast sales using sktime-based models.  
+  3. Allocate schedules using profitability estimates and merge updates.  
 
----
+- **Business Value**:  
+  High – Essential for accurate scheduling.  
 
-### **Slide 6: Challenges and Solutions**
-1. **Data Quality**:  
-   - **Challenge**: Noisy or incomplete data.  
-   - **Solution**: Implemented data validation and cleansing.  
+- **Support Details**:  
+  - Platform: Databricks  
+  - Frequency: Weekly  
+  - SLA: 1 hour  
 
-2. **Integration with GetRecs**:  
-   - **Challenge**: Synchronizing recommendations with GetRecs.  
-   - **Solution**: Conducted rigorous testing to ensure seamless integration.  
-
----
-
-### **Slide 7: Testing and Evaluation**
-1. **Performance Monitoring**:  
-   - Regularly compares YMAL’s recommendations with GetRecs.  
-2. **Key Metrics**:  
-   - Customer engagement rates.  
-   - Relevance and accuracy of recommendations.  
-   - Conversion rates.  
+- **Failure Points**:  
+  - **Insufficient Historical Data**: Address stores with minimal data.  
+  - **Oversized Data Partitions**: Manage partitions for scalability.
 
 ---
 
-### **Slide 8: Conclusion**
-YMAL represents Starbucks’ innovative approach to personalized recommendations. By leveraging machine learning and customer data, YMAL provides alternative product suggestions that enhance the customer experience and foster loyalty, complementing the existing GetRecs system.
+## Store Segmentation Overview  
+Store segmentation moves away from the "one size fits all" approach, offering tailored groupings based on product mix, daypart demand, and store type. It enables better decision-making and targeted business strategies.
 
 ---
 
-Let me know if you’d like additional details or modifications!
-Slide 8: Conclusion
-GetRecs and YMAL are Starbucks’ key applications for enhancing customer experiences.
-Together, they provide personalized, real-time recommendations that foster engagement and loyalty.
-YMAL acts as a challenger system, ensuring diverse and innovative recommendations aligned with customer preferences.
+## Segmentation Models  
+
+### **1. Channel and Daypart Segmentation**  
+- **Purpose**:  
+  Differentiates cafe and drive-thru stores for targeted clustering.  
+
+- **Clusters**:  
+  - **Drive-Thru Stores**: 5 clusters.  
+  - **Cafe Stores**: 4 clusters.  
+
+- **Methodology**:  
+  - Data scaling and K-means clustering.  
+  - Heatmaps and spider plots visualize performance metrics.  
+
+- **Key Metrics**:  
+  Darker heatmap colors indicate higher metric weights.  
+
+---
+
+### **2. Product Mix Segmentation**  
+- **Purpose**:  
+  Groups stores by beverage-only and combined beverage/food metrics.  
+
+- **Clusters**:  
+  - Beverage-only: 4 clusters.  
+  - Beverage and food: 7 clusters.  
+
+- **Key Details**:  
+  - Includes iced vs. hot beverages.  
+  - Uses scaled data for clustering.  
+
+---
+
+### **3. Customer Segmentation**  
+- **Purpose**:  
+  Profiles customer types and behaviors pre- and post-COVID.  
+
+- **Metrics**:  
+  - **Regular Revenue %**: Share of revenue from top 20% regular customers.  
+  - **Commuters %**: Transactions from frequent commuters.  
+  - **Tourist Transactions %**: Contributions from occasional tourists.  
+
+- **Notes**:  
+  Demographic data is sourced from TAA workspace, not CMA.
+
+---
+
+## Store Segmentation Pipeline  
+
+### **Pipeline Name**:  
+`store_segmentation_beverage_pipeline`  
+
+- **Purpose**:  
+  Categorizes stores into clusters for quick analysis based on demand and product mix.  
+
+- **Workflow**:  
+  1. Collect sales, time, and product data.  
+  2. Create feature tables for clustering models.  
+  3. Train and validate models.  
+
+- **Criticality**:  
+  Medium – Ensures segmentation accuracy and reflects changes in store dynamics.  
+
+- **Support Details**:  
+  - Platform: ADF & Databricks  
+  - Frequency: Monthly (3rd day) or ad-hoc.  
+  - SLA: 45 minutes.  
+
+---
+
+## Conclusion  
+Batch Bake and Store Segmentation pipelines are critical for operational excellence and business strategy. By leveraging advanced machine learning and data processing, these workflows ensure seamless operations, accurate forecasting, and targeted decision-making.
+
+# Documentation: Batch Bake and Store Segmentation  
+
+## **Objective**  
+This document outlines the workflows, pipelines, and methodologies behind Batch Bake and Store Segmentation. These processes are critical for efficient bakery operations, accurate forecasting, and targeted store strategies, enhancing business decision-making and customer experiences.  
+
+---
+
+## **Introduction**  
+### **Batch Bake**  
+Batch Bake optimizes bakery operations by handling SKU assignments, forecasting sales, and managing schedules. These processes ensure stores receive timely and accurate product and schedule updates, minimizing inefficiencies and improving inventory management.  
+
+### **Store Segmentation**  
+Store Segmentation moves beyond the traditional "one-size-fits-all" approach. By clustering stores based on product mix, customer demand, and store type, it enables data-driven strategies to target specific needs and improve performance.  
+
+---
+
+## **Steps to Implement Batch Bake and Store Segmentation**  
+
+### **Batch Bake**  
+
+#### **1. Assign SKUs to Stores**  
+- **Objective**: Map SKUs to stores using bakery temperature data (frozen or ambient).  
+- **Steps**:  
+  1. Collect item "ranging" data from inventory management.  
+  2. Assign SKUs based on bakery temperature.  
+  3. Validate data for uniqueness, null values, and proper SKU assignments using **cuallee**.  
+- **Outcome**: A table mapping SKUs to stores for future batch bake tasks.  
+
+#### **2. Push Bake Schedule**  
+- **Objective**: Deliver updated schedules to stores via SPC Azure storage.  
+- **Steps**:  
+  1. Generate weekly schedules in JSON format with store metadata.  
+  2. Publish schedules to Azure storage.  
+  3. Log schedules in a sent-schedules table.  
+- **Outcome**: Stores receive updated schedules, ensuring continuity in bakery operations.  
+
+#### **3. Train, Forecast, and Allocate Bake Schedule**  
+- **Objective**: Use historical sales data to forecast demand and allocate schedules.  
+- **Steps**:  
+  1. Train models with half-hourly sales data for each store and notional product.  
+  2. Forecast sales using **sktime-based** models.  
+  3. Allocate bake schedules based on profitability and demand predictions.  
+  4. Update existing schedule tables with new forecasts.  
+- **Outcome**: Optimized schedules aligned with forecasted demand and profitability.  
+
+---
+
+### **Store Segmentation**  
+
+#### **1. Channel and Daypart Segmentation**  
+- **Objective**: Differentiate performance between cafe and drive-thru stores.  
+- **Steps**:  
+  1. Perform K-means clustering on scaled data for cafe and drive-thru stores.  
+  2. Use heatmaps and spider plots to visualize cluster performance.  
+  3. Assign clusters based on key metrics like demand and performance.  
+- **Outcome**: 5 clusters for drive-thru stores and 4 for cafe stores, excluding other types (e.g., pickup).  
+
+#### **2. Product Mix Segmentation**  
+- **Objective**: Group stores by beverage and food offerings.  
+- **Steps**:  
+  1. Build models for "beverage only" and "beverage and food" segments.  
+  2. Perform clustering and visualize results using heatmaps and spider plots.  
+  3. Segment based on product types like espresso, frappuccino, tea, and snacks.  
+- **Outcome**: 4 clusters for beverage-only and 7 for beverage and food.  
+
+#### **3. Customer Segmentation**  
+- **Objective**: Profile customer behaviors pre- and post-COVID.  
+- **Steps**:  
+  1. Use metrics like regular revenue %, commuter %, and tourist transactions %.  
+  2. Compare demographic data to identify changes in customer types.  
+  3. Segment stores accordingly to target different customer bases.  
+- **Outcome**: Segments based on customer behavior and demographics for enhanced marketing strategies.  
+
+---
+
+## **Pipeline Overview**  
+
+### **Batch Bake Pipelines**  
+
+| **Pipeline**             | **Purpose**                              | **Frequency** | **Platform** | **SLA**       |  
+|--------------------------|------------------------------------------|---------------|--------------|---------------|  
+| Assign SKUs to Stores    | Maps SKUs to stores using bakery data.   | Weekly        | Databricks   | 20 minutes    |  
+| Push Bake Schedule       | Sends updated schedules to stores.       | Weekly        | Databricks   | 20 minutes    |  
+| Train, Forecast, Allocate| Trains models and forecasts schedules.   | Weekly        | Databricks   | 1 hour        |  
+
+### **Store Segmentation Pipeline**  
+
+| **Pipeline**                     | **Purpose**                                         | **Frequency** | **Platform**       | **SLA**       |  
+|----------------------------------|-----------------------------------------------------|---------------|--------------------|---------------|  
+| Store Segmentation Pipeline      | Segments stores by demand and product mix.          | Ad hoc/Monthly| ADF & Databricks   | 45 minutes    |  
+
+---
+
+## **Predictable Failures and Solutions**  
+
+| **Pipeline**             | **Failure Type**                   | **Solution**                                                                 |  
+|--------------------------|-------------------------------------|------------------------------------------------------------------------------|  
+| Assign SKUs to Stores    | Data validation errors             | Verify data integrity and adjust validations for transitions or new products.|  
+| Push Bake Schedule       | Missing schedules                  | Retry with existing schedules or investigate errors in upstream data.        |  
+| Train, Forecast, Allocate| Insufficient historical data       | Add more data or exclude underperforming stores.                             |  
+| Store Segmentation       | Model training errors              | Analyze data integrity, monitor errors, and adjust cluster parameters.       |  
+
+---
+
+## **Conclusion**  
+Batch Bake and Store Segmentation processes are critical for operational excellence at Starbucks.  
+- **Batch Bake** ensures timely forecasting, schedule management, and SKU assignments.  
+- **Store Segmentation** enables data-driven decisions by clustering stores based on unique metrics like demand, customer behavior, and product mix.  
+
+By leveraging advanced pipelines and machine learning models, these processes drive efficiency, improve customer experiences, and support targeted strategies.
