@@ -1,267 +1,131 @@
-Thanks for sharing the details! I’ll frame a comprehensive yet concise documentation that captures the essence of the batch bake and store segmentation processes, including the pipelines and workflows. Let me get started.
+NGP : Next Gen Platform
+Introduction:
+Pyspark based application scheduled in Airflow.
+System whose goal is to send personalized offers from Starbucks to customers.
+Offers are providing as an Email to the customers.
+Final output – Personalized emails
+Three major phases:
+1. Features
+All the data from different sources will be extracted and arranged into a final delta table.
+2.Model training  
+Using the data to train the models.
+3. Monarch Workflow 
+Final output
+1. Feature Phase:
+Extracting all the data from edap and other sources and arranging them in the delta table.
+Code is generated on the fly during pipeline execution.
+Code is saved in ADLS path- in 2 locations
+Feature pipelines
+10 pipelines currently running in preprod
+Activities
+Concurrency
+Run_id
+ds value
+Interactive clusters
+NGP run status
+Generated programs:
+Sensors: Check whether a particular database condition is met, if not. 2 types of sensors: 	
+Databricks table sensor – Checks for a database condition
+External sensors – Checking if a previous pipeline has completed. Both sensors got executed before ingestion starts.
+Feature ingestion: where the actual data extraction and ejection happens. 
+Sequel operation class: Most of the feature extraction programs are coming under this category.
+Pyspark operator class
+Pyscript operator class
+Expectations: Detect anomalies in the data. The goal of this expectations module is to check for these anomalies based on some inputs and then produce an HTML file which is then eventually emailed out.
+Emailors:  It will have the to address and then email level called detect. It is an indication whether to send the email or not. If you look at the contents of that emailer, it will have the email address of the recipient.
+
+2. Modelling Workflow:
+Offers in NGP can be broadly divided into two types:
+Product-based offers
+Frequency-based offers
+
+Modeling workflow is a model training workflow. This workflow has three types of models:
+Uplift Model
+Random Model
+Picker Model
+Model Training Workflow:
+1. Uplift Model:
+Offer assignment is done using the uplift model.
+The uplift model is trained for each offer type (BSPR/CPDASH/CDSH/CSTR etc) and offer duration (primary/overlay)
+2. Random Model:
+Offer assignment is defined using a configuration file.
+The random model is trained for each offer type (BSPR/CPDASH/CDSH/CSTR etc) and offer duration (primary/overlay)
+3. Picker model:
+Products to be included in product-based offers are selected using this model.
+The picker model is trained for product-based offer types only.
+Workflow:
+1. Random Lane workflow
+Random Lane Setup - random_lane_format and random_lane_spec_path is supposed to be provided at the time of executing quickstart.py
+Random Lane Assembly
+
+2. Uplift Workflow
+Uplift Dataprep 
+Uplift Training
+Uplift Rank Treatment
+Uplift Assembly
+
+3. Reassembling the hybrid champion model
+Assembling hybrid champion means, combining uplift models from buckets that were trained as part of two separate offer deployments.
+
+4. Picker Model workflow
+Picker Create Model - xid_wheel_assign_loc is supposed to be provided at the time of executing quickstart.py
+Picker Register Model - Models are registered into mlflow with the following naming convention
+   {app_name}_{model_type}_{offer_construct}
+    Ex: ngp_picker_bspr
+5. Model Registration
+This workflow has a separate config.
+The configurable parameters will be 
+offer_construct
+offer_duration
+offer_optimization
+MLFLow run id and a split ratio of the model which is supposed to be registered.
+If a champion is supposed to be registered: Champion mlflow_id and split_ratio
+If a challenger is supposed to be registered: Challenger mlflow_id and split_ratio
+If a random model is supposed to be registered: Random mlflow_id and split_ratio
+If a control model is supposed to be registered: Control mlflow_id and split_ratio
+5. Model Registration
+c) Models are registered into mlflow with the following naming convention:
+Random
+              {app_name}_{model_type}_{offer_construct}_{offer_duration}
+               Ex: ngp_random_bspr_overlay
+Uplift
+              {app_name}_{model_type}_{offer_construct}_{offer_duration}_{model_category}
+               Ex: ngp_uplift_bspr_overlay_champion
+Control
+              {app_name}_{model_type}
+              Ex: ngp_control
+Executing Modelling workflow:
+Create a feature branch from the main branch (right now, we need to create a branch from develop since the code is not pushed to main branch).
+Run the quickstart script to populate either model training or model registration configs.
+Once the configs are populated, push the changes to the same feature branch.
+Trigger main_modelling_workflow_pipeline ADF pipeline. This pipeline has two inputs:
+git_branch - which will be the feature branch we created above
+pipeline_name - this value will be either the model training pipeline (main_training_workflow) or model registration pipeline (register_model_mlflow).
+3. Monarch Workflow:
+This workflow assigns offers to each customer. It uses the data created as part of the features pipeline and models trained as part of the modelling workflow for assignment.
+
+Steps in Monarch Workflow:
+1. Get the details of the offers to be deployed.
+2. Route the audience to the model which will be used for offer assignment based on the splitting ratio registered in the modelling workflow.
+3. Use the registered models which was decided for the customer for offer assignment.
+4. Create a QA file that contains details about the offer assignment.
+a. In addition to different offer types and offer duration, there is something called as offer optimization. So   whenever a model is trained, it is considered as a optimized offer.
+ b. NGP also has some scenarios wherein they will have a list of offers and they won’t rely on models for offer assignment, so those offers are called explicit offers or hybrid offers. 
+c. So only, if the offer is optimized after the offer assignment is done, QA file is generated.
+5. If it is an optimized offer, pause the workflow and send the QA file for approval.
+6. If not, write the scored data to the delivery location.
+
+Pipelines:
+ This is the main offer deployment workflow pipeline that starts with getting the list of offers which are supposed to be deployed and once it gets the rest of the offers, it checks.
+ They have some parameter to check and if it is suitable, it goes through the offer deployment. That happens in filter payload module.
+ In filter payload, it filters the data and if it is applicable to go through offer deployment. Then, only it executes the offer deployment pipeline.
+ In getParam stage, it gets the specific details with respect to that offer, like offer construct, time stamp.
+
+ Once it gets the detail, it sends out a mail claiming that the offer deployment process for this particular offer has started.
+ Once the mail is sent out, assembling the model product, picking all those steps that are executed. So, all those happens in offer scoring part.
+ And there is a check, where we can see, if it is an optimized offer, it will send a QA mail with that QA file that has been generated and the flow would be stopped there.
+ If it is not an optimized offer, it will execute the offer delivery step.
+ Once the offer has been delivered, it again sends out the delivery mail like the offer has been successfully handed over.
 
-# Batch Bake and Store Segmentation Documentation  
 
-## Batch Bake Overview  
-Batch Bake processes are designed to optimize bakery operations by managing schedules, inventory, and forecasting demand. These pipelines handle tasks like SKU assignment, schedule pushing, and sales forecasting, ensuring efficient workflows and timely data updates.
 
----
-
-## Pipelines in Batch Bake  
-
-### **1. Assign SKUs to Stores**  
-- **Purpose**:  
-  Updates a mapping table to associate stores and notional products with SKUs based on bakery temperatures (frozen/ambient).  
-
-- **Workflow**:  
-  1. Collect data from inventory management on store and product relationships.  
-  2. Assign SKUs to stores using bakery temperature data.  
-  3. Validate data for uniqueness and null checks using **cuallee**.  
-
-- **Business Value**:  
-  Medium – Output is foundational but not time-critical if delayed.  
-
-- **Support Details**:  
-  - Platform: Databricks  
-  - Frequency: Weekly  
-  - SLA: 20 minutes  
-
-- **Failure Points**:  
-  - **Data Validation Errors**: Ensure data integrity.  
-  - **Transitioning Supply Chains**: Handle stores with multiple SKUs carefully.
-
----
-
-### **2. Push Bake Schedule**  
-- **Purpose**:  
-  Publishes bake schedules to store iPads and updates receipts for tracking schedules sent.  
-
-- **Workflow**:  
-  1. Generate weekly schedule blobs in JSON format with metadata.  
-  2. Send schedules to SPC Azure storage.  
-  3. Update tables to log sent schedules.  
-
-- **Business Value**:  
-  High – Ensures timely delivery of schedules to stores.  
-
-- **Support Details**:  
-  - Platform: Databricks  
-  - Frequency: Weekly  
-  - SLA: 20 minutes  
-
-- **Failure Points**:  
-  - **Schedule Updates Missing**: Ensures previous schedules remain available.  
-
----
-
-### **3. Train, Forecast, and Allocate Bake Schedule**  
-- **Purpose**:  
-  Core pipeline for Batch Bake, responsible for training models, forecasting demand, and allocating schedules.  
-
-- **Workflow**:  
-  1. Train model with half-hourly sales data.  
-  2. Forecast sales using sktime-based models.  
-  3. Allocate schedules using profitability estimates and merge updates.  
-
-- **Business Value**:  
-  High – Essential for accurate scheduling.  
-
-- **Support Details**:  
-  - Platform: Databricks  
-  - Frequency: Weekly  
-  - SLA: 1 hour  
-
-- **Failure Points**:  
-  - **Insufficient Historical Data**: Address stores with minimal data.  
-  - **Oversized Data Partitions**: Manage partitions for scalability.
-
----
-
-## Store Segmentation Overview  
-Store segmentation moves away from the "one size fits all" approach, offering tailored groupings based on product mix, daypart demand, and store type. It enables better decision-making and targeted business strategies.
-
----
-
-## Segmentation Models  
-
-### **1. Channel and Daypart Segmentation**  
-- **Purpose**:  
-  Differentiates cafe and drive-thru stores for targeted clustering.  
-
-- **Clusters**:  
-  - **Drive-Thru Stores**: 5 clusters.  
-  - **Cafe Stores**: 4 clusters.  
-
-- **Methodology**:  
-  - Data scaling and K-means clustering.  
-  - Heatmaps and spider plots visualize performance metrics.  
-
-- **Key Metrics**:  
-  Darker heatmap colors indicate higher metric weights.  
-
----
-
-### **2. Product Mix Segmentation**  
-- **Purpose**:  
-  Groups stores by beverage-only and combined beverage/food metrics.  
-
-- **Clusters**:  
-  - Beverage-only: 4 clusters.  
-  - Beverage and food: 7 clusters.  
-
-- **Key Details**:  
-  - Includes iced vs. hot beverages.  
-  - Uses scaled data for clustering.  
-
----
-
-### **3. Customer Segmentation**  
-- **Purpose**:  
-  Profiles customer types and behaviors pre- and post-COVID.  
-
-- **Metrics**:  
-  - **Regular Revenue %**: Share of revenue from top 20% regular customers.  
-  - **Commuters %**: Transactions from frequent commuters.  
-  - **Tourist Transactions %**: Contributions from occasional tourists.  
-
-- **Notes**:  
-  Demographic data is sourced from TAA workspace, not CMA.
-
----
-
-## Store Segmentation Pipeline  
-
-### **Pipeline Name**:  
-`store_segmentation_beverage_pipeline`  
-
-- **Purpose**:  
-  Categorizes stores into clusters for quick analysis based on demand and product mix.  
-
-- **Workflow**:  
-  1. Collect sales, time, and product data.  
-  2. Create feature tables for clustering models.  
-  3. Train and validate models.  
-
-- **Criticality**:  
-  Medium – Ensures segmentation accuracy and reflects changes in store dynamics.  
-
-- **Support Details**:  
-  - Platform: ADF & Databricks  
-  - Frequency: Monthly (3rd day) or ad-hoc.  
-  - SLA: 45 minutes.  
-
----
-
-## Conclusion  
-Batch Bake and Store Segmentation pipelines are critical for operational excellence and business strategy. By leveraging advanced machine learning and data processing, these workflows ensure seamless operations, accurate forecasting, and targeted decision-making.
-
-# Documentation: Batch Bake and Store Segmentation  
-
-## **Objective**  
-This document outlines the workflows, pipelines, and methodologies behind Batch Bake and Store Segmentation. These processes are critical for efficient bakery operations, accurate forecasting, and targeted store strategies, enhancing business decision-making and customer experiences.  
-
----
-
-## **Introduction**  
-### **Batch Bake**  
-Batch Bake optimizes bakery operations by handling SKU assignments, forecasting sales, and managing schedules. These processes ensure stores receive timely and accurate product and schedule updates, minimizing inefficiencies and improving inventory management.  
-
-### **Store Segmentation**  
-Store Segmentation moves beyond the traditional "one-size-fits-all" approach. By clustering stores based on product mix, customer demand, and store type, it enables data-driven strategies to target specific needs and improve performance.  
-
----
-
-## **Steps to Implement Batch Bake and Store Segmentation**  
-
-### **Batch Bake**  
-
-#### **1. Assign SKUs to Stores**  
-- **Objective**: Map SKUs to stores using bakery temperature data (frozen or ambient).  
-- **Steps**:  
-  1. Collect item "ranging" data from inventory management.  
-  2. Assign SKUs based on bakery temperature.  
-  3. Validate data for uniqueness, null values, and proper SKU assignments using **cuallee**.  
-- **Outcome**: A table mapping SKUs to stores for future batch bake tasks.  
-
-#### **2. Push Bake Schedule**  
-- **Objective**: Deliver updated schedules to stores via SPC Azure storage.  
-- **Steps**:  
-  1. Generate weekly schedules in JSON format with store metadata.  
-  2. Publish schedules to Azure storage.  
-  3. Log schedules in a sent-schedules table.  
-- **Outcome**: Stores receive updated schedules, ensuring continuity in bakery operations.  
-
-#### **3. Train, Forecast, and Allocate Bake Schedule**  
-- **Objective**: Use historical sales data to forecast demand and allocate schedules.  
-- **Steps**:  
-  1. Train models with half-hourly sales data for each store and notional product.  
-  2. Forecast sales using **sktime-based** models.  
-  3. Allocate bake schedules based on profitability and demand predictions.  
-  4. Update existing schedule tables with new forecasts.  
-- **Outcome**: Optimized schedules aligned with forecasted demand and profitability.  
-
----
-
-### **Store Segmentation**  
-
-#### **1. Channel and Daypart Segmentation**  
-- **Objective**: Differentiate performance between cafe and drive-thru stores.  
-- **Steps**:  
-  1. Perform K-means clustering on scaled data for cafe and drive-thru stores.  
-  2. Use heatmaps and spider plots to visualize cluster performance.  
-  3. Assign clusters based on key metrics like demand and performance.  
-- **Outcome**: 5 clusters for drive-thru stores and 4 for cafe stores, excluding other types (e.g., pickup).  
-
-#### **2. Product Mix Segmentation**  
-- **Objective**: Group stores by beverage and food offerings.  
-- **Steps**:  
-  1. Build models for "beverage only" and "beverage and food" segments.  
-  2. Perform clustering and visualize results using heatmaps and spider plots.  
-  3. Segment based on product types like espresso, frappuccino, tea, and snacks.  
-- **Outcome**: 4 clusters for beverage-only and 7 for beverage and food.  
-
-#### **3. Customer Segmentation**  
-- **Objective**: Profile customer behaviors pre- and post-COVID.  
-- **Steps**:  
-  1. Use metrics like regular revenue %, commuter %, and tourist transactions %.  
-  2. Compare demographic data to identify changes in customer types.  
-  3. Segment stores accordingly to target different customer bases.  
-- **Outcome**: Segments based on customer behavior and demographics for enhanced marketing strategies.  
-
----
-
-## **Pipeline Overview**  
-
-### **Batch Bake Pipelines**  
-
-| **Pipeline**             | **Purpose**                              | **Frequency** | **Platform** | **SLA**       |  
-|--------------------------|------------------------------------------|---------------|--------------|---------------|  
-| Assign SKUs to Stores    | Maps SKUs to stores using bakery data.   | Weekly        | Databricks   | 20 minutes    |  
-| Push Bake Schedule       | Sends updated schedules to stores.       | Weekly        | Databricks   | 20 minutes    |  
-| Train, Forecast, Allocate| Trains models and forecasts schedules.   | Weekly        | Databricks   | 1 hour        |  
-
-### **Store Segmentation Pipeline**  
-
-| **Pipeline**                     | **Purpose**                                         | **Frequency** | **Platform**       | **SLA**       |  
-|----------------------------------|-----------------------------------------------------|---------------|--------------------|---------------|  
-| Store Segmentation Pipeline      | Segments stores by demand and product mix.          | Ad hoc/Monthly| ADF & Databricks   | 45 minutes    |  
-
----
-
-## **Predictable Failures and Solutions**  
-
-| **Pipeline**             | **Failure Type**                   | **Solution**                                                                 |  
-|--------------------------|-------------------------------------|------------------------------------------------------------------------------|  
-| Assign SKUs to Stores    | Data validation errors             | Verify data integrity and adjust validations for transitions or new products.|  
-| Push Bake Schedule       | Missing schedules                  | Retry with existing schedules or investigate errors in upstream data.        |  
-| Train, Forecast, Allocate| Insufficient historical data       | Add more data or exclude underperforming stores.                             |  
-| Store Segmentation       | Model training errors              | Analyze data integrity, monitor errors, and adjust cluster parameters.       |  
-
----
-
-## **Conclusion**  
-Batch Bake and Store Segmentation processes are critical for operational excellence at Starbucks.  
-- **Batch Bake** ensures timely forecasting, schedule management, and SKU assignments.  
-- **Store Segmentation** enables data-driven decisions by clustering stores based on unique metrics like demand, customer behavior, and product mix.  
-
-By leveraging advanced pipelines and machine learning models, these processes drive efficiency, improve customer experiences, and support targeted strategies.
