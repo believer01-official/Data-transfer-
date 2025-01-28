@@ -1,131 +1,100 @@
-NGP : Next Gen Platform
-Introduction:
-Pyspark based application scheduled in Airflow.
-System whose goal is to send personalized offers from Starbucks to customers.
-Offers are providing as an Email to the customers.
-Final output – Personalized emails
-Three major phases:
-1. Features
-All the data from different sources will be extracted and arranged into a final delta table.
-2.Model training  
-Using the data to train the models.
-3. Monarch Workflow 
-Final output
-1. Feature Phase:
-Extracting all the data from edap and other sources and arranging them in the delta table.
-Code is generated on the fly during pipeline execution.
-Code is saved in ADLS path- in 2 locations
-Feature pipelines
-10 pipelines currently running in preprod
-Activities
-Concurrency
-Run_id
-ds value
-Interactive clusters
-NGP run status
-Generated programs:
-Sensors: Check whether a particular database condition is met, if not. 2 types of sensors: 	
-Databricks table sensor – Checks for a database condition
-External sensors – Checking if a previous pipeline has completed. Both sensors got executed before ingestion starts.
-Feature ingestion: where the actual data extraction and ejection happens. 
-Sequel operation class: Most of the feature extraction programs are coming under this category.
-Pyspark operator class
-Pyscript operator class
-Expectations: Detect anomalies in the data. The goal of this expectations module is to check for these anomalies based on some inputs and then produce an HTML file which is then eventually emailed out.
-Emailors:  It will have the to address and then email level called detect. It is an indication whether to send the email or not. If you look at the contents of that emailer, it will have the email address of the recipient.
+Sure! Here's the documentation based on the detailed information you provided, structured for clarity and ease of understanding:
 
-2. Modelling Workflow:
-Offers in NGP can be broadly divided into two types:
-Product-based offers
-Frequency-based offers
+---
 
-Modeling workflow is a model training workflow. This workflow has three types of models:
-Uplift Model
-Random Model
-Picker Model
-Model Training Workflow:
-1. Uplift Model:
-Offer assignment is done using the uplift model.
-The uplift model is trained for each offer type (BSPR/CPDASH/CDSH/CSTR etc) and offer duration (primary/overlay)
-2. Random Model:
-Offer assignment is defined using a configuration file.
-The random model is trained for each offer type (BSPR/CPDASH/CDSH/CSTR etc) and offer duration (primary/overlay)
-3. Picker model:
-Products to be included in product-based offers are selected using this model.
-The picker model is trained for product-based offer types only.
-Workflow:
-1. Random Lane workflow
-Random Lane Setup - random_lane_format and random_lane_spec_path is supposed to be provided at the time of executing quickstart.py
-Random Lane Assembly
+## **Next Gen Platform (NGP) Documentation**
 
-2. Uplift Workflow
-Uplift Dataprep 
-Uplift Training
-Uplift Rank Treatment
-Uplift Assembly
+### **Objective**
 
-3. Reassembling the hybrid champion model
-Assembling hybrid champion means, combining uplift models from buckets that were trained as part of two separate offer deployments.
+The **Next Gen Platform (NGP)** aims to provide personalized offers to Starbucks customers through email. By leveraging machine learning models, data pipelines, and automated workflows, NGP dynamically selects the most relevant offers for customers, delivering them in an efficient and timely manner.
 
-4. Picker Model workflow
-Picker Create Model - xid_wheel_assign_loc is supposed to be provided at the time of executing quickstart.py
-Picker Register Model - Models are registered into mlflow with the following naming convention
-   {app_name}_{model_type}_{offer_construct}
-    Ex: ngp_picker_bspr
-5. Model Registration
-This workflow has a separate config.
-The configurable parameters will be 
-offer_construct
-offer_duration
-offer_optimization
-MLFLow run id and a split ratio of the model which is supposed to be registered.
-If a champion is supposed to be registered: Champion mlflow_id and split_ratio
-If a challenger is supposed to be registered: Challenger mlflow_id and split_ratio
-If a random model is supposed to be registered: Random mlflow_id and split_ratio
-If a control model is supposed to be registered: Control mlflow_id and split_ratio
-5. Model Registration
-c) Models are registered into mlflow with the following naming convention:
-Random
-              {app_name}_{model_type}_{offer_construct}_{offer_duration}
-               Ex: ngp_random_bspr_overlay
-Uplift
-              {app_name}_{model_type}_{offer_construct}_{offer_duration}_{model_category}
-               Ex: ngp_uplift_bspr_overlay_champion
-Control
-              {app_name}_{model_type}
-              Ex: ngp_control
-Executing Modelling workflow:
-Create a feature branch from the main branch (right now, we need to create a branch from develop since the code is not pushed to main branch).
-Run the quickstart script to populate either model training or model registration configs.
-Once the configs are populated, push the changes to the same feature branch.
-Trigger main_modelling_workflow_pipeline ADF pipeline. This pipeline has two inputs:
-git_branch - which will be the feature branch we created above
-pipeline_name - this value will be either the model training pipeline (main_training_workflow) or model registration pipeline (register_model_mlflow).
-3. Monarch Workflow:
-This workflow assigns offers to each customer. It uses the data created as part of the features pipeline and models trained as part of the modelling workflow for assignment.
+### **Introduction**
 
-Steps in Monarch Workflow:
-1. Get the details of the offers to be deployed.
-2. Route the audience to the model which will be used for offer assignment based on the splitting ratio registered in the modelling workflow.
-3. Use the registered models which was decided for the customer for offer assignment.
-4. Create a QA file that contains details about the offer assignment.
-a. In addition to different offer types and offer duration, there is something called as offer optimization. So   whenever a model is trained, it is considered as a optimized offer.
- b. NGP also has some scenarios wherein they will have a list of offers and they won’t rely on models for offer assignment, so those offers are called explicit offers or hybrid offers. 
-c. So only, if the offer is optimized after the offer assignment is done, QA file is generated.
-5. If it is an optimized offer, pause the workflow and send the QA file for approval.
-6. If not, write the scored data to the delivery location.
+NGP is a PySpark-based application scheduled and managed in **Airflow**. It is designed to automate the process of sending personalized Starbucks offers to customers, relying on various data sources, advanced machine learning models, and robust workflows.
 
-Pipelines:
- This is the main offer deployment workflow pipeline that starts with getting the list of offers which are supposed to be deployed and once it gets the rest of the offers, it checks.
- They have some parameter to check and if it is suitable, it goes through the offer deployment. That happens in filter payload module.
- In filter payload, it filters the data and if it is applicable to go through offer deployment. Then, only it executes the offer deployment pipeline.
- In getParam stage, it gets the specific details with respect to that offer, like offer construct, time stamp.
+The platform works in three major phases:
+1. **Feature Extraction** – Collecting and preparing data for model training.
+2. **Model Training** – Training models to assign relevant offers to customers.
+3. **Monarch Workflow** – Assigning offers to customers and ensuring the proper deployment of personalized email offers.
 
- Once it gets the detail, it sends out a mail claiming that the offer deployment process for this particular offer has started.
- Once the mail is sent out, assembling the model product, picking all those steps that are executed. So, all those happens in offer scoring part.
- And there is a check, where we can see, if it is an optimized offer, it will send a QA mail with that QA file that has been generated and the flow would be stopped there.
- If it is not an optimized offer, it will execute the offer delivery step.
- Once the offer has been delivered, it again sends out the delivery mail like the offer has been successfully handed over.
+### **Phases of NGP**
 
+#### **1. Feature Phase**
 
+The **Feature Phase** is responsible for gathering and preparing data that will be used in model training. 
 
+- **Data Extraction**: Data is pulled from multiple sources, such as **EDAP**, and is consolidated into a **Delta table**.
+- **Code Generation**: Code is dynamically generated during pipeline execution and stored in two locations in **ADLS**.
+- **Pipelines**: This phase includes 10 pipelines currently running in the preprod environment.
+- **Activities in Feature Phase**:
+  - **Concurrency**: Handling parallel processes to ensure efficiency.
+  - **Run IDs and DS Values**: These are used to track pipeline executions.
+  - **Interactive Clusters**: Used to process the data in real time.
+  - **NGP Run Status**: Tracks the overall status of the NGP execution.
+  
+- **Generated Programs**:
+  - **Sensors**: These are used to check if certain conditions in the database are met. There are two types:
+    - **Databricks Table Sensor**: Checks for database conditions.
+    - **External Sensors**: Ensure previous pipeline completions before data ingestion begins.
+  
+  - **Feature Ingestion**: Where the actual extraction and loading of data occur.
+  - **Sequel Operation Class**: Many feature extraction programs fall under this category.
+  - **Anomaly Detection**: The **Expectations** module detects anomalies in the data, generating an HTML file with the detected issues.
+  - **Email Notifications**: Emailers are used to notify recipients about detected issues, and these notifications are sent based on certain conditions.
+
+#### **2. Model Training Phase**
+
+The **Model Training Phase** focuses on training machine learning models to assign relevant offers to customers.
+
+- **Types of Offers**:
+  - **Product-Based Offers**: Tailored to product recommendations.
+  - **Frequency-Based Offers**: Based on the customer's interaction frequency with Starbucks.
+
+- **Types of Models**:
+  - **Uplift Model**: This model is trained to assign offers based on uplift, considering factors like customer behavior and offer effectiveness.
+  - **Random Model**: Uses predefined configurations to randomly assign offers.
+  - **Picker Model**: This model selects products to include in product-based offers.
+  
+- **Workflow**:
+  - **Random Lane Workflow**: Manages the random assignment of offers.
+  - **Uplift Workflow**: Involves data preparation, training, ranking, and assembling uplift-based offers.
+  - **Hybrid Champion Model**: A model combining results from multiple uplift models across offer deployments.
+  - **Picker Model Workflow**: Selects products for inclusion in product-based offers.
+
+- **Model Registration**:
+  - Models are registered in **MLFlow** using a consistent naming convention:
+    - **Random Model**: `{app_name}_{model_type}_{offer_construct}_{offer_duration}`
+    - **Uplift Model**: `{app_name}_{model_type}_{offer_construct}_{offer_duration}_{model_category}`
+    - **Control Model**: `{app_name}_{model_type}`
+  
+- **Executing the Modeling Workflow**:
+  - Create a feature branch in Git.
+  - Run the **Quickstart Script** to populate model training and registration configurations.
+  - Trigger the **Main Modeling Workflow Pipeline** in Azure Data Factory (ADF) to begin the model training and registration process.
+
+#### **3. Monarch Workflow Phase**
+
+The **Monarch Workflow** is responsible for assigning the trained models to customers and ensuring the proper deployment of personalized offers.
+
+- **Steps**:
+  1. **Offer Deployment**: Get the list of offers to be deployed.
+  2. **Offer Routing**: Route customers to the appropriate model based on the splitting ratio.
+  3. **Model Application**: Apply the selected model to assign the correct offer to each customer.
+  4. **QA File Generation**: If the offer is optimized, generate a QA file for review and approval before final deployment.
+  5. **Offer Delivery**: Once approved, or if no optimization is needed, deliver the offer to the customer and send out a confirmation email.
+
+- **Offer Optimization**:
+  - Offers are either **optimized** (based on model output) or **explicit** (manually selected).
+  - Optimized offers go through a quality assurance (QA) process, while explicit offers are directly delivered.
+
+- **Offer Deployment Pipeline**:
+  - The pipeline checks the offer details, filters the data, and proceeds with the offer deployment if conditions are met.
+  - **Notifications** are sent at each key stage of the process, including offer start, model assembly, QA approval, and offer delivery.
+
+### **Conclusion**
+
+The Next Gen Platform (NGP) is an advanced, machine-learning-driven system designed to enhance Starbucks' customer engagement through personalized offers. By combining robust data extraction, model training, and the Monarch Workflow, NGP ensures that customers receive relevant and timely offers via email. This dynamic platform not only optimizes the process of offer deployment but also ensures ongoing improvements through real-time analysis and feedback.
+
+---
+
+This structured documentation provides a comprehensive overview of NGP while being accessible to new learners. Let me know if you need further adjustments or additions!
