@@ -1,6 +1,103 @@
-For Random Models: {app_name}_{model_type}_{offer_construct}_{offer_duration}
-Example: ngp_random_bspr_overlay
-For Uplift Models: {app_name}_{model_type}_{offer_construct}_{offer_duration}_{model_category}
-Example: ngp_uplift_bspr_overlay_champion
-For Control Models: {app_name}_{model_type}
-Example: ngp_control
+Here’s the slide information with additional slides like "Why NGP," "Benefits," and more. The content is structured to cover all key aspects in a modern and engaging way:
+
+---
+
+### **Slide 1: Title Slide**
+- **Title:** Next Gen Platform (NGP)  
+- **Subtitle:** Revolutionizing Personalized Customer Engagement  
+- **Footer:** Powered by Starbucks Technology  
+
+---
+
+### **Slide 2: Contents**
+- Objective  
+- Why NGP?  
+- Introduction  
+- Phases of NGP  
+  - Feature Phase  
+  - Model Training Phase  
+  - Monarch Workflow Phase  
+- Benefits of NGP  
+- Conclusion  
+
+---
+
+### **Slide 3: Objective**
+- Provide personalized offers to Starbucks customers via email.  
+- Leverage machine learning, automated workflows, and data pipelines to deliver relevant offers efficiently.  
+- Enhance customer engagement with tailored recommendations.
+
+---
+
+### **Slide 4: Why NGP?**
+- Traditional methods lacked personalization and scalability.  
+- Growing demand for data-driven marketing strategies.  
+- Need for real-time insights and recommendations.  
+- Ensures Starbucks stays ahead in customer engagement through innovation.
+
+---
+
+### **Slide 5: Introduction**
+- Scalable PySpark-based application managed via Airflow.  
+- Designed to deliver personalized offers through advanced data processing.  
+- Automates the end-to-end workflow from data collection to email delivery.
+
+---
+
+### **Slide 6: Phases of NGP**
+1. **Feature Phase**: Data extraction and preparation.  
+2. **Model Training Phase**: Train models for personalized offers.  
+3. **Monarch Workflow Phase**: Deploy offers via email.
+
+---
+
+### **Slide 7: Feature Phase**
+- Data is pulled from multiple sources (e.g., EDAP) and stored in Delta tables.  
+- Includes 10 active pipelines (e.g., monarch_cf_ngp_ccp_seg, ngp_financial).  
+- Uses sensors and anomaly detection to ensure data quality.  
+- Email notifications are sent for issue alerts.
+
+---
+
+### **Slide 8: Model Training Phase**
+- **Types of Offers**: Product-based and frequency-based.  
+- **Types of Models**: Uplift, Random, Picker.  
+- **Workflows**: Random lane, Uplift, Hybrid Champion, Picker Model.  
+- **Model Registration**: MLFlow is used for version control and tracking.
+
+---
+
+### **Slide 9: Monarch Workflow Phase**
+- Assigns trained models to customers for offer deployment.  
+- **Steps**: Offer routing, model application, QA file generation, offer delivery.  
+- Notifications sent at key stages to ensure transparency.
+
+---
+
+### **Slide 10: Benefits of NGP**
+- **Enhanced Personalization**: Deliver tailored offers to customers.  
+- **Scalability**: Handles large-scale data efficiently with PySpark and Airflow.  
+- **Automation**: Reduces manual effort with automated pipelines and workflows.  
+- **Real-time Feedback**: Continuously improves offers through analysis and feedback.  
+- **Improved Customer Engagement**: Boosts satisfaction and loyalty.
+
+---
+
+### **Slide 11: Challenges and Solutions**
+- **Challenge**: Data anomalies.  
+  **Solution**: Anomaly detection module with email alerts.  
+- **Challenge**: Scalability.  
+  **Solution**: Efficient pipeline design with Airflow.  
+- **Challenge**: Model performance.  
+  **Solution**: Use of uplift and hybrid models for optimal results.
+
+---
+
+### **Slide 12: Conclusion**
+- NGP is a robust and dynamic platform enhancing customer engagement.  
+- Combines feature extraction, model training, and workflow automation.  
+- Drives innovation in delivering personalized Starbucks offers efficiently.
+
+---
+
+Would you like me to add more sections or further refine any slide content?
