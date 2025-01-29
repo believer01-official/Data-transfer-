@@ -1,172 +1,146 @@
-
-    - "Good [morning/afternoon], everyone. Today, I'll be walking you through the Next Gen Platform (NGP), it's an  solution designed to enhance Starbucks' personalized offer delivery using machine learning and automation."  
-  - Set the stage:  
-    - "This platform is a game-changer in how we engage customers and optimize marketing strategies."
-
----We’ll start with the objective,
+Here's the content formatted as a structured document for your reference:  
 
 ---
 
-### **Slide 3: Objective**  
-- **How to present:**  
-  - "The primary goal of NGP is to provide highly personalized offers to Starbucks customers. Instead of generic promotions, we use advanced machine learning and data pipelines to ensure customers receive relevant, engaging offers in a timely manner."  
-  - "This automation not only increases efficiency but also improves customer engagement."
+# **Batch Bake & Store Segmentation**  
+
+## **Contents**  
+1. **Batch Bake Overview**  
+2. **Pipelines in Batch Bake**  
+   - Assign SKUs to Stores  
+   - Push Bake Schedule  
+   - Train, Forecast, and Allocate Bake Schedule  
+3. **Store Segmentation Overview**  
+4. **Segmentation Models**  
+5. **Store Segmentation Pipeline**  
+6. **Pipeline Overview**  
+7. **Conclusion**  
 
 ---
 
-### **Slide 4: Why NGP?**  
-- **How to present:**  
-  - "Why did we build NGP? Traditional marketing approaches lacked personalization and scalability."  
-  - "With the rise of data-driven decision-making, we needed a robust system that could dynamically select offers based on customer behavior."  
-  - "NGP ensures we stay ahead in digital marketing  and drive customer engagement more effectively."
+## **Batch Bake Overview**  
+Batch Bake processes optimize bakery operations by managing schedules, inventory, and forecasting demand. These pipelines ensure efficient workflows, SKU assignments, and timely data updates.  
 
 ---
 
-### **Slide 5: Introduction**  
-- **How to present:**  
-  - "NGP is a highly scalable PySpark-based application, managed via Airflow, which automates the process of delivering personalized offers."  
-  - "This platform processes large amounts of data, extracts insights, trains models, and efficiently delivers offers through email."
+## **Pipelines in Batch Bake**  
+
+### **1. Assign SKUs to Stores**  
+- **Purpose:** Updates SKU-to-store mappings based on bakery temperatures (frozen/ambient).  
+- **Steps:**  
+  1. Collect item "ranging" data from inventory management.  
+  2. Assign SKUs based on bakery temperature.  
+  3. Validate data using cuallee.  
+- **Outcome:** A table mapping SKUs to stores for future batch bake tasks.  
+- **Support Details:**  
+  - **Platform:** Databricks  
+  - **Frequency:** Weekly  
+  - **SLA:** 20 minutes  
+- **Failure Points:** Data validation errors, transitioning supply chains.  
 
 ---
 
-### **Slide 6: Phases of NGP**  
-- **How to present:**  
-  - "NGP operates in three major phases: Feature Phase, Model Training Phase, and Monarch Workflow Phase."  
-  - "Each phase plays a crucial role in ensuring that our customers receive the best possible offers."
+### **2. Push Bake Schedule**  
+- **Purpose:** Publishes bake schedules to store iPads and updates receipts for tracking.  
+- **Steps:**  
+  1. Generate weekly schedules in JSON format with store metadata.  
+  2. Publish schedules to Azure storage.  
+  3. Log schedules in a sent schedules table.  
+- **Outcome:** Stores receive updated schedules, ensuring bakery continuity.  
+- **Support Details:**  
+  - **Platform:** Databricks  
+  - **Frequency:** Weekly  
+  - **SLA:** 20 minutes  
+- **Failure Points:** Ensuring previous schedules remain available.  
 
 ---
 
-### **Slide 7: Feature Phase**  
-- **How to present:** 
-
-**“In the **Feature Phase** of our Next Gen Platform, we focus on extracting and preparing data for model training. Here's how it works:**
-
-1. **Data Extraction & Storage:**  
-   - First, we **extract data** from **EDAP** and other relevant sources. This data is then **stored in Delta tables**, which allow for fast querying and efficient access. Delta tables help maintain the data in a structured, accessible format.
-
-2. **Active Pipelines:**  
-   - There are **10 active pipelines** running during this phase. For example, pipelines like **monarch_cf_ngp.ccp seg** and **ngp financial** focus on specific feature extraction tasks. These pipelines ensure that the data is processed and ready for model training.
-
-3. **Data Quality Assurance:**  
-   - We ensure data integrity by using **sensors** that monitor data availability and completion. This is important for maintaining **high-quality data** throughout the extraction process. We also use **anomaly detection** to identify any outliers or issues early.
-
-4. **Issue Alerts:**  
-   - If there are any issues with the data extraction, we have **email notifications** set up to alert the team immediately. This ensures quick responses and troubleshooting to keep the process smooth.
-
-**In short, this phase ensures that we have reliable, structured, and clean features ready for the next steps in the process.”**
+### **3. Train, Forecast, and Allocate Bake Schedule**  
+- **Purpose:** Trains models, forecasts demand, and allocates schedules.  
+- **Steps:**  
+  1. Train models with half-hourly sales data.  
+  2. Forecast sales using sktime models.  
+  3. Allocate bake schedules based on profitability and demand.  
+  4. Update existing schedule tables with new forecasts.  
+- **Outcome:** Optimized schedules based on demand and profitability.  
+- **Support Details:**  
+  - **Platform:** Databricks  
+  - **Frequency:** Weekly  
+  - **SLA:** 1 hour  
+- **Failure Points:** Insufficient historical data, oversized data partitions.  
 
 ---
 
-This explanation is concise but informative, keeping the focus on key points while ensuring clarity for your audience. It also has a logical flow, making it easy to follow!
-  - **Pro tip:** If asked about **Delta tables**, explain that they are a storage format optimized for big data analytics.
+## **Store Segmentation Overview**  
+Store segmentation moves away from a "one-size-fits-all" approach by offering tailored groupings based on product mix, daypart demand, and store type. It enables better decision-making and targeted business strategies.  
 
 ---
 
-### **Slide 8: Model Training Phase**  
-- **How to present:**  
-  - "Once we have the data, we move into the Model Training Phase. This is where we build models to assign offers intelligently."  
-  - "There are three main types of models:  
-    - **Uplift Model**: Assigns offers based on predicted customer response.  
-    - **Random Model**: Uses predefined configurations to assign offers randomly.  
-    - **Picker Model**: Selects the best products for offer recommendations."  
-  - "We also use **MLFlow** for model tracking and versioning."
-Introduction
-Start by introducing the slide with a brief overview:
+## **Segmentation Models**  
 
-"In this phase of the Next Gen Platform, we focus on training machine learning models that assign personalized offers to Starbucks customers. Let me take you through the details of the model training process."
-Objective
-"The primary goal of this phase is to train machine learning models that can assign relevant offers to customers based on their behavior and preferences."
-This is the foundational objective, setting the stage for the audience.
+### **1. Channel and Daypart Segmentation**  
+- **Purpose:** Differentiates cafe and drive-thru store performance.  
+- **Steps:**  
+  1. Perform K-Means clustering on scaled data.  
+  2. Use heatmaps and spider plots to visualize cluster performance.  
+  3. Assign clusters based on key metrics (demand, performance).  
+- **Outcome:** 5 clusters for drive-thru stores, 4 for cafes (excluding pickup locations).  
 
-Types of Offers
-"We create two main types of offers for the customers."
-Product-Based Offers: These are tailored based on product recommendations (e.g., a customer gets an offer on a product they are likely to purchase).
-Frequency-Based Offers: These offers depend on how frequently a customer interacts with Starbucks (e.g., offers for customers who visit regularly).
-&_________________&&&&&&&_________
-Types of Models
-"The platform employs three types of models for offer assignment."
-Uplift Model: This model determines the best offers based on customer behavior and the expected effectiveness of the offer.
-Random Model: This model assigns offers randomly, using predefined configurations for simplicity or testing.
-Picker Model: This model selects the best products to include in product-based offers, ensuring the right items are recommended.
+### **2. Product Mix Segmentation**  
+- **Purpose:** Groups stores by beverage and food offerings.  
+- **Steps:**  
+  1. Build models for “beverage only” and “beverage & food” segments.  
+  2. Perform clustering and visualize results.  
+  3. Segment based on product types (espresso, frappuccino, tea, snacks).  
+- **Outcome:** 4 clusters for beverage-only stores, 7 for beverage & food stores.  
 
-_--------------------------
-Model Registration in MLFlow
-"Once the models are trained, they need to be registered in MLFlow for version control and tracking."
-Random Model Example: ngp_random_bspr_overlay
-Uplift Model Example: ngp_uplift_bspr_overlay_champion
-Control Model Example: ngp_control
-Explain that MLFlow helps track different models, making it easier to manage multiple versions of models over time.
--------------------------------
-Executing the Modeling Workflow
-"The process of training and registering models is automated through the following steps:"
-Create a feature branch in Git: This allows the team to work on the code separately before merging changes.
-Run the Quickstart Script: This script prepares the environment for model training and registration.
-Trigger the Main Modeling Workflow in ADF: Azure Data Factory (ADF) automates the orchestration of model training and registration processes.
-Conclusion
-"By following these steps, we ensure that models are effectively trained and managed, which allows us to personalize offers and improve customer experience."
----
-
-### **Slide 9: Monarch Workflow Phase**  
-
-### **Introduction**
-Start by introducing the phase:
-- **"In the Monarch Workflow phase, the trained models are applied to customers for offer deployment. This is where we ensure that personalized offers reach the right customers at the right time."**
-
-### **Steps in the Monarch Workflow**
-
-1. **Offer Routing:**
-   - **"First, offers are routed to the appropriate customers based on their profiles and the model's recommendations."**
-   - Explain that routing determines the right customers who should receive which offers.
-   
-2. **Model Application:**
-   - **"After routing, the trained models are applied to these customers to generate the best offers for them."**
-   - This is where the actual magic of personalization happens, ensuring customers get relevant offers.
-
-3. **QA File Generation:**
-   - **"Next, we generate a QA file, which acts as a record of the offers assigned to customers, for quality assurance."**
-   - Emphasize that this ensures accuracy in the offer assignments and helps track any discrepancies.
-
-4. **Offer Delivery:**
-   - **"Finally, the offers are delivered to customers, completing the workflow."**
-   - This step involves sending the actual offers through the chosen channels (email, app, etc.).
+### **3. Customer Segmentation**  
+- **Purpose:** Profiles customer behavior before and after COVID.  
+- **Steps:**  
+  1. Use metrics like regular revenue %, commuter %, and tourist transactions %.  
+  2. Compare demographic data to identify behavioral changes.  
+  3. Segment stores accordingly for targeted marketing.  
+- **Outcome:** Segments based on customer behavior and demographics for improved strategies.  
 
 ---
 
-### **Notifications Section**
-
-- **"Throughout the Monarch Workflow, notifications are sent at key stages to keep all stakeholders informed and ensure transparency."**
-- Explain that notifications might include alerts for when the model is applied, when the QA file is generated, or when offers are successfully delivered.
-
-
-
----
-
-### **Slide 10: Benefits of NGP**  
-- **How to present:**  
-  - "NGP brings multiple advantages:  
-    - **Enhanced Personalization**: Customers receive relevant offers.  
-    - **Scalability**: We handle large volumes of data with PySpark.  
-    - **Automation**: Reduces manual work with end-to-end pipeline automation.  
-    - **Real-time Feedback**: Allows continuous optimization of our offers.  
-    - **Improved Customer Engagement**: Strengthens brand loyalty."  
-  - **Pro tip:** If asked about **real-time feedback**, explain that customer interactions with offers help refine future recommendations.
+## **Store Segmentation Pipeline**  
+- **Pipeline Name:** `store_segmentation_beverage_pipeline`  
+- **Purpose:** Categorizes stores into clusters for quick analysis based on demand and product mix.  
+- **Workflow:**  
+  1. Collect sales, time, and product data.  
+  2. Create feature tables for clustering models.  
+  3. Train and validate models.  
+- **Support Details:**  
+  - **Platform:** ADF & Databricks  
+  - **Frequency:** Monthly (3rd day)  
+  - **SLA:** 45 minutes  
 
 ---
 
-### **Slide 11: Challenges and Solutions**  
-- **How to present:**  
-  - "Like any large-scale system, NGP has its challenges, but we’ve addressed them effectively:  
-    - **Data Anomalies?** → We use anomaly detection to ensure data quality.  
-    - **Scalability Issues?** → PySpark and Airflow allow parallel processing.  
-    - **Model Performance Concerns?** → We continuously refine models using uplift analysis and hybrid modeling."  
- 
+## **Pipeline Overview**  
+
+### **Batch Bake Pipelines**  
+
+| Pipeline               | Purpose                                | Frequency | Platform  | SLA  |  
+|------------------------|----------------------------------------|-----------|-----------|------|  
+| Assign SKUs to Stores  | Maps SKUs to stores using bakery data | Weekly    | Databricks | 20 min |  
+| Push Bake Schedule     | Sends updated schedules to stores    | Weekly    | Databricks | 20 min |  
+| Train, Forecast, Allocate | Trains models and forecasts schedules | Weekly    | Databricks | 1 hour |  
+
+### **Store Segmentation Pipeline**  
+
+| Pipeline                 | Purpose                            | Frequency | Platform      | SLA  |  
+|--------------------------|------------------------------------|-----------|--------------|------|  
+| Store Segmentation Pipeline | Segments stores by demand and product mix | Monthly    | ADF & Databricks | 45 min |  
 
 ---
 
-### **Slide 12: Conclusion**  
-- **How to present:**  
-  - "To wrap up, NGP is a sophisticated, machine learning-driven platform designed to revolutionize how Starbucks delivers personalized offers."  
-  - "By leveraging advanced data pipelines, automated workflows, and real-time feedback, we ensure customers receive the best possible offers efficiently."  
+## **Conclusion**  
+- **Batch Bake** ensures timely forecasting, schedule management, and SKU assignments.  
+- **Store Segmentation** enables data-driven decisions by clustering stores based on demand, customer behavior, and product mix.  
+- By leveraging advanced pipelines and machine learning models, these processes **drive efficiency, improve customer experiences, and support targeted strategies**.  
 
-    - "NGP represents the future of personalized marketing at Starbucks. Thank you!"  
-  
+---
+
+This structured format should help in preparing both your PowerPoint slides and documentation. Let me know if you need any modifications!
