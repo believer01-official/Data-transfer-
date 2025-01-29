@@ -1,103 +1,42 @@
-Here’s the slide information with additional slides like "Why NGP," "Benefits," and more. The content is structured to cover all key aspects in a modern and engaging way:
+Introduction
+Start by introducing the slide with a brief overview:
 
----
+"In this phase of the Next Gen Platform, we focus on training machine learning models that assign personalized offers to Starbucks customers. Let me take you through the details of the model training process."
+Objective
+"The primary goal of this phase is to train machine learning models that can assign relevant offers to customers based on their behavior and preferences."
+This is the foundational objective, setting the stage for the audience.
 
-### **Slide 1: Title Slide**
-- **Title:** Next Gen Platform (NGP)  
-- **Subtitle:** Revolutionizing Personalized Customer Engagement  
-- **Footer:** Powered by Starbucks Technology  
+Types of Offers
+"We create two main types of offers for the customers."
+Product-Based Offers: These are tailored based on product recommendations (e.g., a customer gets an offer on a product they are likely to purchase).
+Frequency-Based Offers: These offers depend on how frequently a customer interacts with Starbucks (e.g., offers for customers who visit regularly).
+Types of Models
+"The platform employs three types of models for offer assignment."
+Uplift Model: This model determines the best offers based on customer behavior and the expected effectiveness of the offer.
+Random Model: This model assigns offers randomly, using predefined configurations for simplicity or testing.
+Picker Model: This model selects the best products to include in product-based offers, ensuring the right items are recommended.
+Model Registration in MLFlow
+"Once the models are trained, they need to be registered in MLFlow for version control and tracking."
+Random Model Example: ngp_random_bspr_overlay
+Uplift Model Example: ngp_uplift_bspr_overlay_champion
+Control Model Example: ngp_control
+Explain that MLFlow helps track different models, making it easier to manage multiple versions of models over time.
+Executing the Modeling Workflow
+"The process of training and registering models is automated through the following steps:"
+Create a feature branch in Git: This allows the team to work on the code separately before merging changes.
+Run the Quickstart Script: This script prepares the environment for model training and registration.
+Trigger the Main Modeling Workflow in ADF: Azure Data Factory (ADF) automates the orchestration of model training and registration processes.
+Conclusion
+"By following these steps, we ensure that models are effectively trained and managed, which allows us to personalize offers and improve customer experience."
+Presentation Tips:
+Be clear and concise: Explain each section in a simple manner to keep the audience engaged.
+Use visuals: If you have any relevant diagrams, include them to visually explain concepts like the MLFlow registration or model types.
+Relate to the audience: Emphasize how the models improve the Starbucks customer experience by providing personalized offers.
+Practice: Rehearse explaining each section smoothly to ensure you stay within time and cover all important points.
+Would you like more help in refining your speech or preparing additional content for your presentation?
 
----
 
-### **Slide 2: Contents**
-- Objective  
-- Why NGP?  
-- Introduction  
-- Phases of NGP  
-  - Feature Phase  
-  - Model Training Phase  
-  - Monarch Workflow Phase  
-- Benefits of NGP  
-- Conclusion  
 
----
 
-### **Slide 3: Objective**
-- Provide personalized offers to Starbucks customers via email.  
-- Leverage machine learning, automated workflows, and data pipelines to deliver relevant offers efficiently.  
-- Enhance customer engagement with tailored recommendations.
 
----
 
-### **Slide 4: Why NGP?**
-- Traditional methods lacked personalization and scalability.  
-- Growing demand for data-driven marketing strategies.  
-- Need for real-time insights and recommendations.  
-- Ensures Starbucks stays ahead in customer engagement through innovation.
-
----
-
-### **Slide 5: Introduction**
-- Scalable PySpark-based application managed via Airflow.  
-- Designed to deliver personalized offers through advanced data processing.  
-- Automates the end-to-end workflow from data collection to email delivery.
-
----
-
-### **Slide 6: Phases of NGP**
-1. **Feature Phase**: Data extraction and preparation.  
-2. **Model Training Phase**: Train models for personalized offers.  
-3. **Monarch Workflow Phase**: Deploy offers via email.
-
----
-
-### **Slide 7: Feature Phase**
-- Data is pulled from multiple sources (e.g., EDAP) and stored in Delta tables.  
-- Includes 10 active pipelines (e.g., monarch_cf_ngp_ccp_seg, ngp_financial).  
-- Uses sensors and anomaly detection to ensure data quality.  
-- Email notifications are sent for issue alerts.
-
----
-
-### **Slide 8: Model Training Phase**
-- **Types of Offers**: Product-based and frequency-based.  
-- **Types of Models**: Uplift, Random, Picker.  
-- **Workflows**: Random lane, Uplift, Hybrid Champion, Picker Model.  
-- **Model Registration**: MLFlow is used for version control and tracking.
-
----
-
-### **Slide 9: Monarch Workflow Phase**
-- Assigns trained models to customers for offer deployment.  
-- **Steps**: Offer routing, model application, QA file generation, offer delivery.  
-- Notifications sent at key stages to ensure transparency.
-
----
-
-### **Slide 10: Benefits of NGP**
-- **Enhanced Personalization**: Deliver tailored offers to customers.  
-- **Scalability**: Handles large-scale data efficiently with PySpark and Airflow.  
-- **Automation**: Reduces manual effort with automated pipelines and workflows.  
-- **Real-time Feedback**: Continuously improves offers through analysis and feedback.  
-- **Improved Customer Engagement**: Boosts satisfaction and loyalty.
-
----
-
-### **Slide 11: Challenges and Solutions**
-- **Challenge**: Data anomalies.  
-  **Solution**: Anomaly detection module with email alerts.  
-- **Challenge**: Scalability.  
-  **Solution**: Efficient pipeline design with Airflow.  
-- **Challenge**: Model performance.  
-  **Solution**: Use of uplift and hybrid models for optimal results.
-
----
-
-### **Slide 12: Conclusion**
-- NGP is a robust and dynamic platform enhancing customer engagement.  
-- Combines feature extraction, model training, and workflow automation.  
-- Drives innovation in delivering personalized Starbucks offers efficiently.
-
----
-
-Would you like me to add more sections or further refine any slide content?
