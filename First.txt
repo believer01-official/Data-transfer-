@@ -1,73 +1,45 @@
-The PowerPoint presentation includes the following key sections based on the information you provided:
+Here's a detailed explanation for each of the **main data pipelines** in the **Digital Drive-Thru (DDT) application**:  
 
-### **1. Introduction**
-- **Title:** DDT (Digital Drive-Thru) – Refresher Session  
-- **Overview:** DDT provides personalized recommendations based on store location, weather, time, and customer cart activity using reinforcement learning.  
+---
 
-### **2. Application Overview**
-- **Reinforcement Algorithm:** Uses historical product data for recommendations.  
-- **Zero Cart vs. Plus Cart:**  
-  - *Zero Cart:* No items added → recommendations based on store’s historical data.  
-  - *Plus Cart:* Items added → personalized recommendations.  
-- **Key Feature:** Real-time processing with low latency.  
-- **API:** DDT application uses ModelServe.  
+### **1. Splunk Pipeline**  
+The **Splunk pipeline** is responsible for collecting and processing real-time event logs and operational data from the system. It ensures that missing data is backfilled efficiently.  
 
-### **3. Application Architecture**
-- Customer request enters the **store network**.  
-- Passes through **security layers**:  
-  - **Blue Coat Proxy** (Web security)  
-  - **Retail Network Firewall** (Barrier between users & Starbucks network)  
-  - **Open API** (Protection from open internet attacks)  
-- Request authentication via **OAuth** → **Orchestrator** → **Deepbrew DDT Tardigrade**.  
-- Processed in DDT models → Recommendations sent back.  
-- **Key Metric:** Recommendation request time.  
+#### **Splunk_Hourly Pipeline**  
+- Runs **every hour** to process event logs.  
+- If an hourly run **fails**, the system waits for the next **two consecutive runs** to check if it automatically backfills the failed data.  
+- If the data is **not backfilled automatically**, a **manual backfill** is performed using `splunk_adf_main_backfill`.  
+- The backfill process retrieves **missing logs** based on **date and time** from an **Azure Databricks notebook**.  
 
-### **4. High-Level Architecture**
-- Request flow:  
-  **Store Network → Open API → DDT App Services → Redis Cache → Response to Customer**  
-- DDT App Services uses **three models**:  
-  - **DDQN:** Categorizes request.  
-  - **IMS:** Checks stock availability.  
-  - **Bandits:** Generates recommendations.  
-- **Redis Cache** replaces SQL DB, stores data in **ADLS Path**.  
+#### **Splunk_Weekly Pipeline**  
+- Runs **once a week** to backfill any missing data that was left out by the hourly runs.  
+- Ensures that historical logs are complete for **analytics and monitoring**.  
 
-### **5. DDT Application Flow**
-- **Request Flow:**  
-  1. **Orchestrator URL** → Decides request routing.  
-  2. **Traffic Manager URL** → Splits traffic (CUS, EUS2).  
-  3. **APIM** → API call to **Frontend Kubernetes Service**.  
-  4. **Frontend Service:** Authorization → Preprocessing → Switching.  
-  5. **Backend Kubernetes Service:** Uses **DDQN & DICF models**.  
-  6. Processed request → Sent back to customers.  
-- **Additional Features:**  
-  - **Redis** (Data storage)  
-  - **KeyVault** (Stores security keys)  
-  - **NewRelic** (App monitoring, being replaced by **Vector**)  
+---
 
-### **6. Data Pipelines**
-#### **Pipeline Architecture**
-- Data ingestion from **New Relic** & **Splunk**.  
-- **Tardigrade Pipelines:** Processes data and extracts features like product, store, weather.  
-- **Feature Storage:** Redis cache via **upload_to_redis pipeline**.  
-- **Model Training:**  
-  - Models trained using **DDQN & DICF**.  
-  - Stored in **mlflow** using **model_train_and_promote pipeline**.  
-- **Inference:** Model predictions used in DDT application → Customer recommendations.  
+### **2. Tardigrade Pipeline**  
+The **Tardigrade pipeline** is a feature engineering pipeline that processes and extracts key data attributes.  
 
-#### **Streaming Data Processing**
-- **Product Streaming:** 24/7 store inventory monitoring → Updates Redis cache.  
-- **Scala-based Streaming Jobs.**  
+- Ingests data from **New Relic** and **Splunk**.  
+- Processes data in the **tardigrade_main_master_split** pipeline.  
+- Generates **product, store, weather, and hourly weather** features.  
+- Stores the extracted features in **Redis cache** using the **upload_to_redis** pipeline.  
+- **Xpbuff activities** in the `feature_tardigrade` pipeline send these features for **model training**.  
 
-### **7. Main Data Pipelines**
-1. **Splunk Pipeline:**  
-   - Splunk_hourly (Runs every hour, auto backfills)  
-   - Splunk_weekly (Runs weekly, backfills missing data)  
-2. **Tardigrade Pipeline:** Generates product, store, weather features.  
-3. **Weekly Measurement:** Generates **previous Sunday data**, uploads to Redis.  
-4. **Weekly Product Insights:** Provides insights for dashboards.  
+---
 
-### **8. Datadog Alerts & Monitoring**
-- If issues arise, **Datadog logs** are checked for errors.  
-- Issues analyzed based on logs and resolved accordingly.  
+### **3. Weekly Measurement Pipeline**  
+- Runs **weekly** to generate data for the **immediate previous Sunday**.  
+- Extracts important data such as **variants and pricing**.  
+- The processed data is **uploaded to Redis cache** for further use in recommendations.  
 
-This structured information is included in the PPT. Let me know if you need changes!
+---
+
+### **4. Weekly Product Insights Pipeline**  
+- Generates **weekly insights** based on the latest data.  
+- Helps in creating **dashboards and analytics reports**.  
+- Used for tracking **product trends, customer behavior, and store performance**.  
+
+---
+
+These pipelines **ensure smooth data processing, feature generation, and model training** for the DDT application. Let me know if you need more details!
