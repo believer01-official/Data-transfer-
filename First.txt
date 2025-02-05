@@ -1,86 +1,73 @@
-Certainly! Here's a structured presentation outline based on the provided information about the Digital Drive-Thru (DDT) application:
+The PowerPoint presentation includes the following key sections based on the information you provided:
 
-**Slide 1: Title Slide**
-- **Title:** Digital Drive-Thru (DDT)
-- **Subtitle:** Enhancing Customer Experience with AI/ML
-- **Presenter's Name**
-- **Date**
+### **1. Introduction**
+- **Title:** DDT (Digital Drive-Thru) – Refresher Session  
+- **Overview:** DDT provides personalized recommendations based on store location, weather, time, and customer cart activity using reinforcement learning.  
 
-**Slide 2: Contents**
-- Objective
-- Introduction to Digital Drive-Thru
-  - Zero Cart
-  - Plus Cart
-- DDT Sequence Diagram
-- DDT Workflow Diagram
-- Monitoring and Metrics
-  - Metrics Monitored
-  - Key Features
-- Conclusion
+### **2. Application Overview**
+- **Reinforcement Algorithm:** Uses historical product data for recommendations.  
+- **Zero Cart vs. Plus Cart:**  
+  - *Zero Cart:* No items added → recommendations based on store’s historical data.  
+  - *Plus Cart:* Items added → personalized recommendations.  
+- **Key Feature:** Real-time processing with low latency.  
+- **API:** DDT application uses ModelServe.  
 
-**Slide 3: Objective**
-- Provide a comprehensive overview of the Digital Drive-Thru (DDT) Application.
-- Emphasize its functionality, architecture, and key operational processes.
-- Highlight the use of advanced AI/ML-based algorithms for real-time product recommendations at drive-thru locations.
-- Discuss essential monitoring aspects, including performance metrics and latency monitoring through DataDog dashboards, ensuring seamless operation and low latency for real-time customer interactions.
+### **3. Application Architecture**
+- Customer request enters the **store network**.  
+- Passes through **security layers**:  
+  - **Blue Coat Proxy** (Web security)  
+  - **Retail Network Firewall** (Barrier between users & Starbucks network)  
+  - **Open API** (Protection from open internet attacks)  
+- Request authentication via **OAuth** → **Orchestrator** → **Deepbrew DDT Tardigrade**.  
+- Processed in DDT models → Recommendations sent back.  
+- **Key Metric:** Recommendation request time.  
 
-**Slide 4: Introduction to Digital Drive-Thru**
-- The DDT application leverages Artificial Intelligence (AI) and Machine Learning (ML) to provide personalized product recommendations to customers at various drive-thru locations.
-- Recommendations are tailored based on factors such as:
-  - Store location
-  - Weather conditions
-  - Time of day
-  - Historical customer purchase data
-- The system uses reinforcement learning algorithms to analyze past customer behavior and optimize outcomes.
+### **4. High-Level Architecture**
+- Request flow:  
+  **Store Network → Open API → DDT App Services → Redis Cache → Response to Customer**  
+- DDT App Services uses **three models**:  
+  - **DDQN:** Categorizes request.  
+  - **IMS:** Checks stock availability.  
+  - **Bandits:** Generates recommendations.  
+- **Redis Cache** replaces SQL DB, stores data in **ADLS Path**.  
 
-**Slide 5: Zero Cart and Plus Cart**
-- **Zero Cart:** When there are no items in the customer's cart.
-- **Plus Cart:** When the customer adds products to their cart, the application dynamically refreshes recommendations based on the newly added products.
+### **5. DDT Application Flow**
+- **Request Flow:**  
+  1. **Orchestrator URL** → Decides request routing.  
+  2. **Traffic Manager URL** → Splits traffic (CUS, EUS2).  
+  3. **APIM** → API call to **Frontend Kubernetes Service**.  
+  4. **Frontend Service:** Authorization → Preprocessing → Switching.  
+  5. **Backend Kubernetes Service:** Uses **DDQN & DICF models**.  
+  6. Processed request → Sent back to customers.  
+- **Additional Features:**  
+  - **Redis** (Data storage)  
+  - **KeyVault** (Stores security keys)  
+  - **NewRelic** (App monitoring, being replaced by **Vector**)  
 
-**Slide 6: DDT Sequence Diagram**
-- As soon as a customer adds a product to the cart, a POST request is sent to our endpoint.
-- Stores without open internet access route traffic through a proxy (Blue Coat), then through "Retail Network Firewalls" (hosted in data centers in Florida/Virginia) to access the open network.
-- The request is then routed to the Open API, which provides interface-level edge protection against internet attacks. Authentication is handled by Azure Auth.
-- Requests from whitelisted IPs are transferred to the orchestrator, leading to the Deep Brew orchestration.
-- The orchestrator determines the appropriate endpoint, such as the Tardigrade endpoint.
-- The Deep Brew Tardigrade DDT algorithm generates new recommendations based on the request.
-- **Recommendation Request Time (Reco Request):** The total time between the customer's POST request to Starbucks and the response.
+### **6. Data Pipelines**
+#### **Pipeline Architecture**
+- Data ingestion from **New Relic** & **Splunk**.  
+- **Tardigrade Pipelines:** Processes data and extracts features like product, store, weather.  
+- **Feature Storage:** Redis cache via **upload_to_redis pipeline**.  
+- **Model Training:**  
+  - Models trained using **DDQN & DICF**.  
+  - Stored in **mlflow** using **model_train_and_promote pipeline**.  
+- **Inference:** Model predictions used in DDT application → Customer recommendations.  
 
-**Slide 7: DDT Workflow Diagram**
-- Upon adding a product to the cart, a POST request reaches the Deep Brew orchestrator.
-- The orchestrator detects the user request and directs it to the traffic manager.
-- The traffic manager manages traffic by splitting it into two regions: East US and Central US. All requests are in the form of APIs, managed by Azure API Management.
-- Azure API Management routes the request to Frontend Ingress and Backend Ingress.
-  - **Frontend Ingress:** Performs authentication, preprocesses the request, and switches to Backend Ingress.
-  - **Backend Ingress:** Based on the type of request and force variant, selects the backend model, provides model training, generates the model response, and returns it to the user.
-- **Logging:** App Insights and New Relic are used for logging.
+#### **Streaming Data Processing**
+- **Product Streaming:** 24/7 store inventory monitoring → Updates Redis cache.  
+- **Scala-based Streaming Jobs.**  
 
-**Slide 8: Monitoring and Metrics**
-- The DDT application employs the DataDog dashboard for monitoring purposes.
-- Monitoring is conducted every 8 hours to ensure smooth system functioning.
-- As a real-time application, low latency is a critical feature.
+### **7. Main Data Pipelines**
+1. **Splunk Pipeline:**  
+   - Splunk_hourly (Runs every hour, auto backfills)  
+   - Splunk_weekly (Runs weekly, backfills missing data)  
+2. **Tardigrade Pipeline:** Generates product, store, weather features.  
+3. **Weekly Measurement:** Generates **previous Sunday data**, uploads to Redis.  
+4. **Weekly Product Insights:** Provides insights for dashboards.  
 
-**Slide 9: Metrics Monitored**
-- Throughput distribution
-- P95 and P99 application latency
-- P95 and P99 Redis latency
-- Latency distribution graph
-- Log counts distributions
-- CPU usage by pod
-- Memory usage by pod
-- Pods running
-- Worker timeouts (tracked from Azure Kubernetes Service)
+### **8. Datadog Alerts & Monitoring**
+- If issues arise, **Datadog logs** are checked for errors.  
+- Issues analyzed based on logs and resolved accordingly.  
 
-**Slide 10: Key Features**
-- AI/ML-driven recommendations for personalized customer experiences.
-- Real-time updates with dynamic recommendation refreshes.
-- Low latency for seamless performance.
-- Advanced monitoring using DataDog dashboard and Azure Kubernetes Service.
-
-**Slide 11: Conclusion**
-- The Digital Drive-Thru (DDT) Application demonstrates the power of AI/ML algorithms in revolutionizing customer service through personalized recommendations.
-- By utilizing real-time data and historical trends, the application enhances the drive-thru experience with optimized product suggestions.
-- Detailed monitoring and performance tracking through DataDog dashboards ensure operational reliability, scalability, and efficiency.
-- Continuous improvements and reinforcement learning make the DDT application a vital tool for delivering a superior customer experience, reinforcing its role in modern, data-driven retail environments.
-
-This outline provides a comprehensive structure for your presentation, ensuring clarity and a logical flow of information. 
+This structured information is included in the PPT. Let me know if you need changes!
