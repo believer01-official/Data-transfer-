@@ -1,29 +1,25 @@
 import requests
-import json
+from requests.auth import HTTPBasicAuth
 
-# Get your Datadog API key securely from Databricks secret scope
-api_key = dbutils.secrets.get(scope="datadog-secrets", key="api_key")
+# Replace with your ServiceNow instance and credentials
+instance = 'your_instance'  # e.g., 'dev12345'
+username = 'your_username'
+password = 'your_password'
 
-# Datadog Logs HTTP endpoint (for US region)
-url = "https://http-intake.logs.datadoghq.com/v1/input"
+# Use a lightweight endpoint just to check connection (no CRUD)
+url = f'https://{instance}.service-now.com/api/now/table/sys_user?sysparm_limit=1'
 
-# Prepare your log message
-log_data = {
-    "message": "Hello from Azure Databricks!",
-    "ddsource": "databricks",
-    "service": "my-databricks-job",
-    "hostname": "my-cluster",
-    "status": "info"
-}
-
-# Headers including your API key
+# Set headers
 headers = {
-    "Content-Type": "application/json",
-    "DD-API-KEY": api_key
+    "Accept": "application/json"
 }
 
-# Send the log to Datadog
-response = requests.post(url, headers=headers, data=json.dumps(log_data))
+# Make the GET request to test connection
+response = requests.get(url, auth=HTTPBasicAuth(username, password), headers=headers)
 
-# Optional: print response status
-print(f"Status Code: {response.status_code}")
+# Check if connection was successful
+if response.status_code == 200:
+    print("Connection to ServiceNow successful!")
+else:
+    print(f"Failed to connect. Status code: {response.status_code}")
+    print(response.text)
